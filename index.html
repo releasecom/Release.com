@@ -34,21 +34,18 @@
         }
 
         #release-shape {
-            /* Starts at the largest size */
-            width: 1000px;
-            height: 1000px;
+            /* Width and height are controlled by JS on load */
             background: var(--shape-color);
             border-radius: 50%;
             filter: blur(30px);
-            opacity: 1;
             box-shadow: 0 0 50px rgba(161, 196, 253, 0.5);
             transition: width 0.1s linear, height 0.1s linear, opacity 0.1s linear;
             animation: pulse 5s infinite ease-in-out;
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.02); opacity: 1; }
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 0.9; }
         }
 
         #controls {
@@ -67,23 +64,34 @@
             z-index: 10;
         }
 
-        label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+        label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; }
         input[type=range] { width: 150px; cursor: pointer; }
 
+        /* Updated white button style */
         button {
             margin-top: 10px;
             cursor: pointer;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 8px;
             border: none;
-            background: #a1c4fd;
+            background: #ffffff;
             color: #0b0e14;
             font-weight: bold;
             text-transform: uppercase;
-            transition: background 0.3s;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        button:hover { background: #c2e9fb; }
+        button:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255,255,255,0.1);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
 
         footer {
             position: absolute;
@@ -100,12 +108,11 @@
     </div>
 
     <div id="controls">
-        <label>Manual Size</label>
-        <input type="range" id="sizeSlider" min="0" max="1000" value="1000">
+        <label>Size your stressor</label>
+        <input type="range" id="sizeSlider" min="0" max="800" value="400">
         
         <label>Release Timer</label>
         <select id="timerSelect">
-            <option value="0">Manual Only</option>
             <option value="10">10 Seconds</option>
             <option value="30">30 Seconds</option>
             <option value="300">5 Minutes</option>
@@ -126,35 +133,35 @@
 
         let releaseInterval;
 
-        // Manual Control
-        sizeSlider.addEventListener('input', (e) => {
-            updateShape(e.target.value);
-            clearInterval(releaseInterval); 
-        });
-
+        // Function to update visuals
         function updateShape(size) {
             shape.style.width = size + 'px';
             shape.style.height = size + 'px';
-            // Opacity decreases as size goes to 0
-            shape.style.opacity = (size / 1000);
             
-            if (size <= 0) {
-                shape.style.display = 'none';
-            } else {
-                shape.style.display = 'block';
-            }
+            // Opacity fades as it gets smaller
+            // (size / max slider value)
+            let opacityValue = (size / 800) + 0.1; 
+            shape.style.opacity = size <= 0 ? 0 : opacityValue;
         }
 
-        // Automatic Release Logic (Largest to Gone)
+        // Manual Slider Control - Immediate response
+        sizeSlider.addEventListener('input', () => {
+            clearInterval(releaseInterval); // Stop any ongoing animation
+            updateShape(sizeSlider.value);
+        });
+
+        // Automatic Release Logic
         startBtn.addEventListener('click', () => {
             clearInterval(releaseInterval);
+            
             let duration = parseInt(timerSelect.value);
-            if (duration === 0) return;
-
             let currentSize = parseFloat(sizeSlider.value);
-            let intervalMs = 100; // Update every 100ms
-            let totalSteps = (duration * 1000) / intervalMs;
-            let sizeReductionPerStep = currentSize / totalSteps;
+            
+            if (currentSize <= 0) return; // Nothing to release
+
+            const intervalMs = 50; // Smoother updates at 50ms
+            const totalSteps = (duration * 1000) / intervalMs;
+            const sizeReductionPerStep = currentSize / totalSteps;
 
             releaseInterval = setInterval(() => {
                 currentSize -= sizeReductionPerStep;
@@ -169,5 +176,8 @@
             }, intervalMs);
         });
 
-        // Initialize state
-        updateShape(
+        // Initial Load
+        updateShape(400);
+    </script>
+</body>
+</html>
