@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Release Space</title>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --shape-color: radial-gradient(circle, #a1c4fd 0%, #c2e9fb 100%);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* The Pond/Circle Shape */
+        #shape-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        #release-shape {
+            width: 300px;
+            height: 300px;
+            background: var(--shape-color);
+            border-radius: 50%;
+            filter: blur(30px);
+            opacity: 0.8;
+            box-shadow: 0 0 50px rgba(161, 196, 253, 0.5);
+            transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+            animation: pulse 5s infinite ease-in-out;
+        }
+
+        /* Pulsing Animation */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        /* Controls Sidebar */
+        #controls {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+
+        input[type=range] { width: 150px; cursor: pointer; }
+
+        footer {
+            position: absolute;
+            bottom: 15px;
+            font-size: 10px;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="shape-container">
+        <div id="release-shape"></div>
+    </div>
+
+    <div id="controls">
+        <label>Manual Size</label>
+        <input type="range" id="sizeSlider" min="0" max="1000" value="300">
+        
+        <label>Release Timer</label>
+        <select id="timerSelect">
+            <option value="0">Manual Only</option>
+            <option value="30">30 Seconds</option>
+            <option value="300">5 Minutes</option>
+            <option value="900">15 Minutes</option>
+            <option value="3600">1 Hour</option>
+        </select>
+
+        <button id="startBtn" style="margin-top:10px; cursor:pointer; padding:5px; border-radius:5px; border:none;">Start Release</button>
+    </div>
+
+    <footer>
+        &copy; 2026 Your Name. All rights reserved.
+    </footer>
+
+    <script>
+        const shape = document.getElementById('release-shape');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const timerSelect = document.getElementById('timerSelect');
+        const startBtn = document.getElementById('startBtn');
+
+        let releaseInterval;
+
+        // Manual Control
+        sizeSlider.addEventListener('input', (e) => {
+            updateShape(e.target.value);
+            clearInterval(releaseInterval); // Stop auto-release if user touches slider
+        });
+
+        function updateShape(size) {
+            shape.style.width = size + 'px';
+            shape.style.height = size + 'px';
+            // Fade out as it gets smaller
+            shape.style.opacity = (size / 1000) + 0.1;
+            if (size <= 5) shape.style.opacity = 0;
+        }
+
+        // Automatic Release Logic
+        startBtn.addEventListener('click', () => {
+            clearInterval(releaseInterval);
+            let duration = parseInt(timerSelect.value);
+            if (duration === 0) return;
+
+            let currentSize = parseInt(sizeSlider.value);
+            let steps = duration * 10; // 10 updates per second for smoothness
+            let sizeReductionPerStep = currentSize / steps;
+
+            releaseInterval = setInterval(() => {
+                currentSize -= sizeReductionPerStep;
+                sizeSlider.value = currentSize;
+                updateShape(currentSize);
+
+                if (currentSize <= 0) {
+                    clearInterval(releaseInterval);
+                    updateShape(0);
+                }
+            }, 100); // Update every 100ms
+        });
+    </script>
+</body>
+</html>
