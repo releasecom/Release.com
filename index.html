@@ -24,7 +24,6 @@
             overflow: hidden;
         }
 
-        /* The Pond/Circle Shape */
         #shape-container {
             position: relative;
             display: flex;
@@ -34,49 +33,86 @@
             width: 100%;
         }
 
+        /* The Pond Shape */
         #release-shape {
-            width: 300px;
-            height: 300px;
+            width: 800px; /* Starts large */
+            height: 800px;
             background: var(--shape-color);
             border-radius: 50%;
-            filter: blur(30px);
-            opacity: 0.8;
-            box-shadow: 0 0 50px rgba(161, 196, 253, 0.5);
-            transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
-            animation: pulse 5s infinite ease-in-out;
+            filter: blur(40px);
+            opacity: 0.9;
+            box-shadow: 0 0 60px rgba(161, 196, 253, 0.4);
+            transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+            animation: pulse 6s infinite ease-in-out;
         }
 
-        /* Pulsing Animation */
         @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.05); opacity: 0.9; }
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.03); opacity: 0.9; }
         }
 
-        /* Controls Sidebar */
+        /* Clean Controls */
         #controls {
             position: absolute;
-            right: 20px;
+            right: 40px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
             flex-direction: column;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            gap: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            align-items: center;
         }
 
-        label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+        label { 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            opacity: 0.6; 
+            text-align: center;
+        }
 
-        input[type=range] { width: 150px; cursor: pointer; }
+        /* The Slider - No pulsing, just a clean track */
+        input[type=range] {
+            writing-mode: bt-lr; /* Vertical slider for a more 'scale' feel */
+            -webkit-appearance: none;
+            width: 6px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        select, button {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
 
         footer {
             position: absolute;
-            bottom: 15px;
-            font-size: 10px;
-            opacity: 0.4;
+            bottom: 20px;
+            font-size: 11px;
+            opacity: 0.5;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -87,23 +123,26 @@
     </div>
 
     <div id="controls">
-        <label>Manual Size</label>
-        <input type="range" id="sizeSlider" min="0" max="1000" value="300">
+        <label>Release</label>
+        <input type="range" id="sizeSlider" min="0" max="1000" value="0">
+        <label>Hold</label>
         
-        <label>Release Timer</label>
+        <div style="height: 20px;"></div>
+
+        <label>Timer</label>
         <select id="timerSelect">
-            <option value="0">Manual Only</option>
+            <option value="0">Manual</option>
             <option value="30">30 Seconds</option>
             <option value="300">5 Minutes</option>
             <option value="900">15 Minutes</option>
             <option value="3600">1 Hour</option>
         </select>
 
-        <button id="startBtn" style="margin-top:10px; cursor:pointer; padding:5px; border-radius:5px; border:none;">Start Release</button>
+        <button id="startBtn">Begin Letting Go</button>
     </div>
 
     <footer>
-        &copy; 2026 Your Name. All rights reserved.
+        &copy; 2026 YOUR NAME HERE. All rights reserved.
     </footer>
 
     <script>
@@ -114,41 +153,45 @@
 
         let releaseInterval;
 
-        // Manual Control
-        sizeSlider.addEventListener('input', (e) => {
-            updateShape(e.target.value);
-            clearInterval(releaseInterval); // Stop auto-release if user touches slider
-        });
-
-        function updateShape(size) {
+        // Logic: 0 is 800px (Full), 1000 is 0px (Gone)
+        function updateShapeFromSlider(sliderValue) {
+            let size = 800 - (sliderValue * 0.8); 
             shape.style.width = size + 'px';
             shape.style.height = size + 'px';
-            // Fade out as it gets smaller
-            shape.style.opacity = (size / 1000) + 0.1;
-            if (size <= 5) shape.style.opacity = 0;
+            shape.style.opacity = (size / 800);
+            
+            if (size <= 10) shape.style.opacity = 0;
         }
 
-        // Automatic Release Logic
+        sizeSlider.addEventListener('input', (e) => {
+            clearInterval(releaseInterval);
+            updateShapeFromSlider(e.target.value);
+        });
+
         startBtn.addEventListener('click', () => {
             clearInterval(releaseInterval);
             let duration = parseInt(timerSelect.value);
             if (duration === 0) return;
 
-            let currentSize = parseInt(sizeSlider.value);
-            let steps = duration * 10; // 10 updates per second for smoothness
-            let sizeReductionPerStep = currentSize / steps;
+            let currentSliderVal = parseInt(sizeSlider.value);
+            let remainingDistance = 1000 - currentSliderVal;
+            let steps = duration * 20; // smoother updates
+            let increment = remainingDistance / steps;
 
             releaseInterval = setInterval(() => {
-                currentSize -= sizeReductionPerStep;
-                sizeSlider.value = currentSize;
-                updateShape(currentSize);
+                currentSliderVal += increment;
+                sizeSlider.value = currentSliderVal;
+                updateShapeFromSlider(currentSliderVal);
 
-                if (currentSize <= 0) {
+                if (currentSliderVal >= 1000) {
                     clearInterval(releaseInterval);
-                    updateShape(0);
+                    updateShapeFromSlider(1000);
                 }
-            }, 100); // Update every 100ms
+            }, 50); 
         });
+
+        // Initialize
+        updateShapeFromSlider(0);
     </script>
 </body>
 </html>
