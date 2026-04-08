@@ -10,8 +10,8 @@
             overflow: hidden; background-color: #f8f8f6; touch-action: none; 
         }
         
-        /* Watercolor blur - tuned for eye comfort */
-        canvas { display: block; filter: blur(7px); } 
+        /* Softer blur for the ripple effect */
+        canvas { display: block; filter: blur(4px); } 
 
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -28,16 +28,13 @@
             position: absolute; bottom: 40px; pointer-events: auto; 
             color: rgba(0,0,0,0.2); text-decoration: none; font-size: 10px;
             letter-spacing: 2px; text-transform: uppercase; z-index: 20;
-            transition: color 0.3s;
         }
-
-        .back-link:hover { color: rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
     <div id="ui-layer">
-        <div class="instruction-text" id="hint">Click to Enter & Expand</div>
+        <div class="instruction-text" id="hint">Click to Enter & Radiate</div>
         <a href="index.html" class="back-link">← Return to Sanctuary</a>
     </div>
 
@@ -48,7 +45,7 @@
         const ctx = canvas.getContext('2d');
         const hint = document.getElementById('hint');
         
-        let particles = [];
+        let ripples = [];
         let interactionStarted = false;
         let lastX = null;
         let lastY = null;
@@ -62,122 +59,63 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Audio Engine: The Universal Hiss (Low-pass filtered white noise)
         function startExperience() {
             if (interactionStarted) return;
             interactionStarted = true;
             hint.style.opacity = 0;
-
-            // Full Screen Trigger
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            }
-
-            // Audio Setup
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
             
+            // Audio Engine: Universal Hiss
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const bufferSize = 2 * audioCtx.sampleRate;
             const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const output = noiseBuffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                output[i] = Math.random() * 2 - 1;
-            }
-
+            for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; }
             const whiteNoise = audioCtx.createBufferSource();
             whiteNoise.buffer = noiseBuffer;
             whiteNoise.loop = true;
-
             const filter = audioCtx.createBiquadFilter();
             filter.type = 'lowpass';
-            // Set at 432Hz for that resonant, airy feel
             filter.frequency.setValueAtTime(432, audioCtx.currentTime); 
-
             const gain = audioCtx.createGain();
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 3); // Soft fade in
-
-            whiteNoise.connect(filter);
-            filter.connect(gain);
-            gain.connect(audioCtx.destination);
-            
+            gain.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 3);
+            whiteNoise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
             whiteNoise.start();
         }
 
-        class Particle {
+        class Ripple {
             constructor(x, y, color) {
                 this.x = x;
                 this.y = y;
-                this.radius = 50; 
+                this.radius = 10; 
+                this.maxRadius = 150 + Math.random() * 100;
                 this.color = color;
-                this.alpha = 1;
-                this.decay = 0.008; 
+                this.alpha = 0.6;
+                this.lineWidth = 15;
             }
             draw() {
-                ctx.globalAlpha = this.alpha;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.lineWidth;
+                ctx.globalAlpha = this.alpha;
+                ctx.stroke();
             }
             update() {
-                this.alpha -= this.decay;
+                this.radius += 2.5; // Expanding speed
+                this.alpha -= 0.008; // Fading speed
+                this.lineWidth *= 0.98; // Getting thinner as it expands
             }
         }
 
-        // Diagnostic Color Flow: Moss Green, Honey, Teal
         function getColor(dx, dy) {
             const speed = Math.sqrt(dx*dx + dy*dy);
             speedBuffer.push(speed);
-            if (speedBuffer.length > 30) speedBuffer.shift();
+            if (speedBuffer.length > 25) speedBuffer.shift();
             const avg = speedBuffer.reduce((a, b) => a + b, 0) / speedBuffer.length;
 
-            if (avg > 35) return '#215c71'; // High Energy: Sea Teal
-            if (avg > 15) return '#8181b5'; // Flow: Muted Violet
-            if (avg > 5)  return '#94a78c'; // Rhythm: Moss Green
-            return '#ccb28a';              // Stillness: Honey Gold
-        }
-
-        function handleMove(x, y) {
-            if (!interactionStarted) return;
-
-            if (lastX !== null) {
-                const color = getColor(x - lastX, y - lastY);
-                particles.push(new Particle(x, y, color));
-            }
-            
-            lastX = x;
-            lastY = y;
-        }
-
-        function animate() {
-            ctx.fillStyle = '#f8f8f6';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].alpha <= 0) {
-                    particles.splice(i, 1);
-                    i--;
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-
-        // Listeners for both activation and movement
-        window.addEventListener('mousedown', startExperience);
-        window.addEventListener('touchstart', (e) => {
-            startExperience();
-            handleMove(e.touches[0].clientX, e.touches[0].clientY);
-        });
-
-        window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
-        window.addEventListener('touchmove', e => {
-            handleMove(e.touches[0].clientX, e.touches[0].clientY);
-        });
-
-    </script>
-</body>
-</html>
+            if (avg > 35) return '#215c71'; // Sea Teal
+            if (avg > 15) return '#8181b5'; // Muted Violet
+            if (avg > 5)  return '#94a78c'; // Moss Green
+            return '#ccb28
