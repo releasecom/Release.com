@@ -17,6 +17,20 @@
         h1 { font-weight: 200; letter-spacing: 15px; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
         .subtitle { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 50px; opacity: 0.5; }
 
+        /* The Breath Anchor */
+        #breath-pacer {
+            position: absolute; width: 300px; height: 300px;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            animation: breathe 8s infinite ease-in-out;
+            pointer-events: none; z-index: 5;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.8); opacity: 0.1; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+        }
+
         .choice-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; pointer-events: auto; }
         .card { 
             width: 180px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.05); 
@@ -25,31 +39,36 @@
             transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
         }
         .card:hover { border-color: rgba(255, 255, 255, 0.4); transform: translateY(-8px); background: rgba(255, 255, 255, 0.05); }
-        .card h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; font-weight: 400; }
-        .card p { font-size: 10px; opacity: 0.4; line-height: 1.6; letter-spacing: 1px; }
 
-        #audio-hint { position: absolute; top: 30px; font-size: 9px; letter-spacing: 4px; opacity: 0.3; text-transform: uppercase; cursor: pointer; pointer-events: auto; transition: opacity 0.3s; }
-        #audio-hint:hover { opacity: 0.8; }
+        #audio-trigger { 
+            position: absolute; top: 30px; pointer-events: auto;
+            border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px;
+            font-size: 9px; letter-spacing: 4px; opacity: 0.4; text-transform: uppercase; 
+            cursor: pointer; transition: all 0.4s;
+        }
+        #audio-trigger:hover { opacity: 1; border-color: rgba(255,255,255,0.4); }
     </style>
 </head>
 <body>
+    <div id="breath-pacer"></div>
     <canvas id="bgCanvas"></canvas>
+    
     <div id="content">
-        <div id="audio-hint" onclick="startMiracleTone()">Activate 528Hz Sanctuary Tone</div>
+        <div id="audio-trigger" onclick="startMiracleTone()">Initiate 528Hz Sanctuary</div>
         <h1>The Luminous Gallery</h1>
         <div class="subtitle">A Sanctuary for Processing</div>
+        
         <div class="choice-container">
-            <a href="release.html" class="card"><h2>The Release</h2><p>Dissolve the noise.</p></a>
-            <a href="gallery.html" class="card"><h2>Liminal Void</h2><p>Radiate energy.</p></a>
-            <a href="forge.html" class="card"><h2>The Forge</h2><p>Expel the weight.</p></a>
+            <a href="release.html" class="card"><h2>The Release</h2></a>
+            <a href="gallery.html" class="card"><h2>Liminal Void</h2></a>
+            <a href="forge.html" class="card"><h2>The Forge</h2></a>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
-        let shapes = [];
-        let audioCtx;
+        let shapes = [], audioCtx;
 
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
@@ -57,12 +76,11 @@
 
         class LuminousBlob {
             constructor() {
-                this.radius = Math.random() * 180 + 120;
+                this.radius = Math.random() * 200 + 150;
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                // Faster, more active movement
-                this.vx = (Math.random() - 0.5) * 1.5;
-                this.vy = (Math.random() - 0.5) * 1.5;
+                this.vx = (Math.random() - 0.5) * 1.8;
+                this.vy = (Math.random() - 0.5) * 1.8;
                 this.color = ['#2d4a3e', '#b89d70', '#5e5e8a', '#1e3a47'][Math.floor(Math.random()*4)];
             }
             update() {
@@ -71,18 +89,15 @@
                 if (this.y < -100 || this.y > canvas.height + 100) this.vy *= -1;
             }
             draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; ctx.fill();
             }
         }
 
         for(let i=0; i<8; i++) shapes.push(new LuminousBlob());
 
         function animate() {
-            ctx.fillStyle = '#050505';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             shapes.forEach(s => { s.update(); s.draw(); });
             requestAnimationFrame(animate);
         }
@@ -99,8 +114,8 @@
             gain.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 3);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start();
-            document.getElementById('audio-hint').style.opacity = "0.1";
-            document.getElementById('audio-hint').innerText = "Vibrating at 528Hz";
+            document.getElementById('audio-trigger').innerText = "Sanctuary Active (528Hz)";
+            document.getElementById('audio-trigger').style.borderColor = "transparent";
         }
     </script>
 </body>
