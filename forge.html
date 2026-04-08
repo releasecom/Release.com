@@ -6,8 +6,7 @@
     <title>The Forge</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #080a0c; font-family: 'Courier New', Courier, monospace; touch-action: none; }
-        /* Blurring the plumes creates that heavy, 'expelled' smoke feel */
-        canvas { display: block; filter: blur(12px) contrast(1.2); }
+        canvas { display: block; filter: blur(15px) contrast(1.2); }
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
         .instruction-text { color: rgba(255,255,255,0.15); font-size: 11px; letter-spacing: 6px; text-transform: uppercase; text-align: center; line-height: 2; transition: opacity 1s; }
         .back-link { position: absolute; bottom: 40px; pointer-events: auto; color: rgba(255,255,255,0.2); text-decoration: none; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
@@ -38,7 +37,7 @@
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
             osc.type = 'sine'; 
-            osc.frequency.setValueAtTime(174, audioCtx.currentTime); // 174Hz Healing Frequency
+            osc.frequency.setValueAtTime(174, audioCtx.currentTime); 
             gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start();
@@ -51,20 +50,30 @@
                 this.vy = vy;
                 this.radius = isSpecial ? 100 : Math.random() * 40 + 30;
                 this.life = 1.0;
-                this.decay = isSpecial ? 0.002 : 0.005;
-                // Brighter Moss and Steel Blue for better visibility
+                // Strict decay ensures it always disappears
+                this.decay = isSpecial ? 0.003 : 0.006; 
+                this.gravity = 0.02; 
                 this.color = Math.random() > 0.5 ? '#3a5a40' : '#415a77'; 
             }
             draw() {
-                ctx.globalAlpha = this.life * 0.6;
+                if (this.life <= 0) return;
+                ctx.globalAlpha = this.life * 0.5;
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = this.color; ctx.fill();
             }
             update() { 
+                this.vy += this.gravity; 
                 this.x += this.vx; 
                 this.y += this.vy; 
                 this.life -= this.decay; 
-                this.radius += 0.2; 
+                this.radius += 0.3; 
+
+                // Floor collision but keep decaying
+                if (this.y > canvas.height) {
+                    this.y = canvas.height;
+                    this.vx *= 0.9;
+                    this.vy = 0;
+                }
             }
         }
 
@@ -74,25 +83,29 @@
         }
 
         function animate() {
-            ctx.fillStyle = '#080a0c'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, i) => {
-                p.update(); p.draw();
-                if (p.life <= 0) particles.splice(i, 1);
+            // Clear frame
+            ctx.fillStyle = '#080a0c'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Filter out dead particles every frame
+            particles = particles.filter(p => p.life > 0);
+
+            particles.forEach(p => {
+                p.update(); 
+                p.draw();
             });
             requestAnimationFrame(animate);
         }
         animate();
 
-        // Mouse/Touch logic
         window.addEventListener('mousedown', () => { startForge(); isMouseDown = true; });
         window.addEventListener('mouseup', () => isMouseDown = false);
         window.addEventListener('mousemove', e => {
             if(isMouseDown) spawn(e.clientX, e.clientY, (Math.random()-0.5)*2, -2);
         });
 
-        // Key Logic: Subconscious wiring through rhythm
         window.addEventListener('keydown', e => {
-            startForge();
+            if (!interactionStarted) startForge();
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             
