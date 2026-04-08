@@ -5,122 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Luminous Gallery</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #080808; /* Deep Obsidian */
-            color: #e0e0e0;
-            font-family: 'Segoe UI', sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        h1 {
-            font-weight: 200;
-            letter-spacing: 15px;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            font-size: 22px;
-            color: #ffffff;
-        }
-
-        .subtitle {
-            font-size: 10px;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            margin-bottom: 60px;
-            opacity: 0.4;
-        }
-
-        .choice-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 0 20px;
-        }
-
-        .card {
-            width: 200px;
-            padding: 40px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 4px; /* Sharper corners for a more 'industrial' feel */
-            text-decoration: none;
-            color: white;
-            transition: all 0.4s ease;
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        /* The Forge Card - Specialized Style */
-        .card.forge-card {
-            border-color: rgba(255, 50, 0, 0.1);
-        }
-
-        .card:hover {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-5px);
-        }
-
-        .card.forge-card:hover {
-            border-color: rgba(255, 50, 0, 0.5);
-            box-shadow: 0 0 20px rgba(255, 50, 0, 0.1);
-        }
-
-        .card h2 {
-            font-size: 12px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .card p {
-            font-size: 11px;
-            opacity: 0.5;
-            line-height: 1.6;
-            font-weight: 300;
-        }
-
-        footer {
-            position: absolute;
-            bottom: 30px;
-            font-size: 9px;
-            opacity: 0.2;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
+        body { margin: 0; padding: 0; background-color: #080808; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        h1 { font-weight: 200; letter-spacing: 15px; text-transform: uppercase; margin-bottom: 10px; font-size: 22px; color: #ffffff; }
+        .subtitle { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 60px; opacity: 0.4; }
+        .choice-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; padding: 0 20px; }
+        .card { width: 200px; padding: 40px 20px; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px; text-decoration: none; color: white; transition: all 0.4s ease; background: rgba(255, 255, 255, 0.02); }
+        .card:hover { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.3); transform: translateY(-5px); }
+        .card h2 { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; }
+        .card p { font-size: 11px; opacity: 0.5; line-height: 1.6; font-weight: 300; }
+        footer { position: absolute; bottom: 30px; font-size: 9px; opacity: 0.2; letter-spacing: 3px; text-transform: uppercase; }
     </style>
 </head>
 <body>
-
     <h1>The Luminous Gallery</h1>
     <div class="subtitle">A Sanctuary for Processing</div>
-
     <div class="choice-container">
-        <a href="release.html" class="card">
-            <h2>The Release</h2>
-            <p>Settle the noise. Size your stress and watch it dissolve into the dark.</p>
-        </a>
-
-        <a href="gallery.html" class="card">
-            <h2>Liminal Void</h2>
-            <p>Stir the white light. A soft space to process and radiate your internal energy.</p>
-        </a>
-
-        <a href="forge.html" class="card forge-card">
-            <h2>The Forge</h2>
-            <p>For the hardened. Strike the surface. Release the heat. 40Hz Resonant Grounding.</p>
-        </a>
+        <a href="release.html" class="card"><h2>The Release</h2><p>Settle the noise. Size your stress and watch it dissolve.</p></a>
+        <a href="gallery.html" class="card"><h2>Liminal Void</h2><p>Stir the white light. Process and radiate your internal energy.</p></a>
+        <a href="forge.html" class="card"><h2>The Forge</h2><p>Expel the weight. A heavy space for grounding and frequency healing.</p></a>
     </div>
-
-    <footer>
-        &copy; 2026 The Sanctuary Project.
-    </footer>
-
+    <footer>&copy; 2026 The Sanctuary Project.</footer>
 </body>
 </html>
