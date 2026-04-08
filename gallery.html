@@ -5,25 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Liminal Void</title>
     <style>
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background-color: #f8f8f6; touch-action: none; 
-        }
-        
-        /* Softer blur for the ripple effect */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f8f8f6; touch-action: none; }
         canvas { display: block; filter: blur(4px); } 
-
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             pointer-events: none; font-family: 'Segoe UI', sans-serif; z-index: 10;
         }
-
-        .instruction-text { 
-            color: rgba(0,0,0,0.1); font-size: 10px; letter-spacing: 5px; 
-            text-transform: uppercase; transition: opacity 1.5s ease; 
-        }
-
+        .instruction-text { color: rgba(0,0,0,0.1); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; transition: opacity 1s; }
         .back-link {
             position: absolute; bottom: 40px; pointer-events: auto; 
             color: rgba(0,0,0,0.2); text-decoration: none; font-size: 10px;
@@ -47,8 +36,7 @@
         
         let ripples = [];
         let interactionStarted = false;
-        let lastX = null;
-        let lastY = null;
+        let lastX = null, lastY = null;
         let speedBuffer = [];
         let audioCtx;
 
@@ -59,13 +47,8 @@
         window.addEventListener('resize', resize);
         resize();
 
-        function startExperience() {
-            if (interactionStarted) return;
-            interactionStarted = true;
-            hint.style.opacity = 0;
-            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-            
-            // Audio Engine: Universal Hiss
+        function initAudio() {
+            if (audioCtx) return;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const bufferSize = 2 * audioCtx.sampleRate;
             const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -79,43 +62,96 @@
             filter.frequency.setValueAtTime(432, audioCtx.currentTime); 
             const gain = audioCtx.createGain();
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 3);
+            gain.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 2);
             whiteNoise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
             whiteNoise.start();
         }
 
         class Ripple {
             constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.radius = 10; 
-                this.maxRadius = 150 + Math.random() * 100;
+                this.x = x; this.y = y;
+                this.radius = 5; 
                 this.color = color;
                 this.alpha = 0.6;
                 this.lineWidth = 15;
             }
+            update() {
+                this.radius += 2.5;
+                this.alpha -= 0.01;
+                this.lineWidth *= 0.97;
+            }
             draw() {
+                ctx.save();
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.strokeStyle = this.color;
                 ctx.lineWidth = this.lineWidth;
                 ctx.globalAlpha = this.alpha;
                 ctx.stroke();
-            }
-            update() {
-                this.radius += 2.5; // Expanding speed
-                this.alpha -= 0.008; // Fading speed
-                this.lineWidth *= 0.98; // Getting thinner as it expands
+                ctx.restore();
             }
         }
 
-        function getColor(dx, dy) {
-            const speed = Math.sqrt(dx*dx + dy*dy);
+        function getColor(x, y) {
+            let speed = 0;
+            if (lastX !== null) {
+                const dx = x - lastX;
+                const dy = y - lastY;
+                speed = Math.sqrt(dx*dx + dy*dy);
+            }
             speedBuffer.push(speed);
-            if (speedBuffer.length > 25) speedBuffer.shift();
+            if (speedBuffer.length > 20) speedBuffer.shift();
             const avg = speedBuffer.reduce((a, b) => a + b, 0) / speedBuffer.length;
 
-            if (avg > 35) return '#215c71'; // Sea Teal
-            if (avg > 15) return '#8181b5'; // Muted Violet
-            if (avg > 5)  return '#94a78c'; // Moss Green
-            return '#ccb28
+            lastX = x; lastY = y;
+
+            if (avg > 30) return '#215c71'; // Teal
+            if (avg > 12) return '#8181b5'; // Violet
+            if (avg > 4)  return '#94a78c'; // Moss Green
+            return '#ccb28a';              // Gold
+        }
+
+        function handleInteraction(x, y) {
+            if (!interactionStarted) {
+                interactionStarted = true;
+                hint.style.opacity = 0;
+                initAudio();
+                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            }
+            
+            const color = getColor(x, y);
+            ripples.push(new Ripple(x, y, color));
+        }
+
+        function animate() {
+            ctx.fillStyle = '#f8f8f6';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ripples = ripples.filter(r => r.alpha > 0);
+            ripples.forEach(r => {
+                r.update();
+                r.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Single Point of Entry for Mouse and Touch
+        window.addEventListener('mousedown', e => handleInteraction(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => {
+            if (interactionStarted) handleInteraction(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('touchstart', e => {
+            const t = e.touches[0];
+            handleInteraction(t.clientX, t.clientY);
+        });
+        window.addEventListener('touchmove', e => {
+            const t = e.touches[0];
+            handleInteraction(t.clientX, t.clientY);
+        });
+    </script>
+</body>
+</html>
