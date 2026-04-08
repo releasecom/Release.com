@@ -6,13 +6,13 @@
     <title>The Liminal Gallery</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f8f8f6; }
-        canvas { display: block; filter: blur(8px); } /* Clarified Blur for better eye comfort */
+        canvas { display: block; filter: blur(8px); cursor: crosshair; } 
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             pointer-events: none; font-family: sans-serif; z-index: 10;
         }
-        .instruction-text { color: rgba(0,0,0,0.1); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; transition: opacity 1s; }
+        .instruction-text { color: rgba(0,0,0,0.1); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; }
         .back-link {
             position: absolute; bottom: 40px; pointer-events: auto; 
             color: rgba(0,0,0,0.2); text-decoration: none; font-size: 10px;
@@ -36,6 +36,8 @@
         
         let particles = [];
         let interactionStarted = false;
+        let lastX = 0;
+        let lastY = 0;
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -48,10 +50,9 @@
             constructor(x, y, dx, dy, color) {
                 this.x = x;
                 this.y = y;
-                this.vx = dx * 0.15; // Slightly faster movement to feel more fluid
-                this.vy = dy * 0.15;
-                // Increased radius to give the single circle more presence
-                this.radius = Math.random() * 50 + 30; 
+                this.vx = dx * 0.1;
+                this.vy = dy * 0.1;
+                this.radius = Math.random() * 40 + 30; 
                 this.color = color;
                 this.alpha = 1;
             }
@@ -65,14 +66,61 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.alpha -= 0.006; // Fades a tiny bit faster to match the clarified look
+                this.alpha -= 0.007; 
             }
         }
 
-        function handleMove(x, y, dx, dy) {
+        function handleMove(x, y) {
             if (!interactionStarted) {
                 interactionStarted = true;
                 hint.style.opacity = 0;
             }
 
+            const dx = x - lastX;
+            const dy = y - lastY;
             const speed = Math.sqrt(dx*dx + dy*dy);
+            
+            // Refined Color Palette
+            let color = '#ccac7a'; // Muted Gold (Slow)
+            if (speed > 25) color = '#1a6680'; // Teal (Fast)
+            else if (speed > 10) color = '#787899'; // Lavender (Medium)
+
+            // Limit particle creation so it doesn't lag
+            if (speed > 2) {
+                particles.push(new Particle(x, y, dx, dy, color));
+            }
+
+            lastX = x;
+            lastY = y;
+        }
+
+        function animate() {
+            ctx.fillStyle = '#f8f8f6';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation immediately
+        animate();
+
+        // Standard Listeners
+        window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+        
+        window.addEventListener('touchmove', e => {
+            e.preventDefault(); // Prevents the screen from wobbling on mobile
+            const touch = e.touches[0];
+            handleMove(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+    </script>
+</body>
+</html>
