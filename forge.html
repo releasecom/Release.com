@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Forge</title>
+    <style>
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background-color: #0d0d0d; /* Deep Charcoal */
+            font-family: 'Courier New', Courier, monospace;
+        }
+        canvas { display: block; filter: contrast(1.5) brightness(0.8); }
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: none; z-index: 10;
+        }
+        .instruction-text { 
+            color: rgba(255,255,255,0.2); font-size: 14px; 
+            letter-spacing: 8px; text-transform: uppercase; 
+            border: 1px solid rgba(255,255,255,0.1); padding: 20px;
+        }
+        .back-link {
+            position: absolute; bottom: 40px; pointer-events: auto; 
+            color: rgba(255,255,255,0.3); text-decoration: none; font-size: 10px;
+            letter-spacing: 3px; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <div class="instruction-text" id="hint">STRIKE TO ACTIVATE</div>
+        <a href="index.html" class="back-link">← Return to Sanctuary</a>
+    </div>
+
+    <canvas id="forgeCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('forgeCanvas');
+        const ctx = canvas.getContext('2d');
+        const hint = document.getElementById('hint');
+        
+        let particles = [];
+        let audioCtx;
+        let oscillator;
+        let gainNode;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Heavy, Ember-like particles
+        class Ember {
+            constructor(x, y, power) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * power;
+                this.vy = (Math.random() - 0.5) * power;
+                this.radius = Math.random() * 6 + 2;
+                // Heat colors: White -> Orange -> Red -> Dark Grey
+                this.life = 1.0;
+                this.decay = 0.01 + Math.random() * 0.02;
+            }
+            draw() {
+                const r = 255;
+                const g = Math.floor(200 * this.life);
+                const b = Math.floor(50 * this.life);
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${this.life})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+            }
+        }
+
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(40, audioCtx.currentTime); // 40Hz Low Thrum
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+        }
+
+        function handleImpact(x, y) {
+            if (!audioCtx) {
+                initAudio();
+                hint.style.opacity = 0;
+            }
+
+            // Pulse the audio volume on impact
+            gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+
+            // Create 'Embers'
+            for (let i = 0; i < 20; i++) {
+                particles.push(new Ember(x, y, 15));
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = '#0d0d0d';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach((p, i) => {
+                p.update();
+                p.draw();
+                if (p.life <= 0) particles.splice(i, 1);
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('mousedown', e => handleImpact(e.clientX, e.clientY));
+        window.addEventListener('touchstart', e => {
+            const touch = e.touches[0];
+            handleImpact(touch.clientX, touch.clientY);
+        });
+    </script>
+</body>
+</html>
