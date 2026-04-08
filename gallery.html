@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Liminal Gallery</title>
+    <title>The Liminal Void</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f8f8f6; touch-action: none; }
-        /* Softened blur for a clean watercolor effect */
-        canvas { display: block; filter: blur(5px); } 
+        /* Refined 'watercolor' blur for a balance of distinct colors and fluid bleed */
+        canvas { display: block; filter: blur(7px); } 
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -24,7 +24,7 @@
 <body>
 
     <div id="ui-layer">
-        <div class="instruction-text" id="hint">Stir the void</div>
+        <div class="instruction-text" id="hint">STIR THE VOID</div>
         <a href="index.html" class="back-link">← Return to Sanctuary</a>
     </div>
 
@@ -39,6 +39,7 @@
         let interactionStarted = false;
         let lastX = null;
         let lastY = null;
+        let speedBuffer = [];
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -51,10 +52,10 @@
             constructor(x, y, color) {
                 this.x = x;
                 this.y = y;
-                this.radius = 45; // Fixed size for consistent feel
+                this.radius = 45; 
                 this.color = color;
                 this.alpha = 1;
-                this.decay = 0.008; // How slow the 'paint' dries
+                this.decay = 0.01; 
             }
             draw() {
                 ctx.globalAlpha = this.alpha;
@@ -68,29 +69,49 @@
             }
         }
 
+        // New strictly diagnostic function
+        function getStrictDiagnosticColor(dx, dy) {
+            const currentSpeed = Math.sqrt(dx*dx + dy*dy);
+            speedBuffer.push(currentSpeed);
+            if (speedBuffer.length > 30) speedBuffer.shift(); // Smooths the change
+
+            const avgSpeed = speedBuffer.reduce((a, b) => a + b, 0) / speedBuffer.length;
+
+            if (avgSpeed > 35) {
+                // High Energy/Beta Path: Grounding Sea Teal
+                return '#215c71';
+            } else if (avgSpeed > 15 && avgSpeed <= 35) {
+                // Rhythmic Path: Process Violet/Moss Transition
+                if (avgSpeed > 25) return '#8181b5'; // Higher flow -> Deep Muted Lavender
+                else return '#758872'; // Medium flow -> Muted Violet-Moss
+            } else {
+                // Stillness Path: Moss & Gold Bloom (The Resonance Goal)
+                if (avgSpeed > 8) return '#94a78c'; // Gentle flow -> Softer Moss Green
+                else return '#ccb28a'; // Deep Stillness -> Warm Honey Gold
+            }
+        }
+
         function handleMove(x, y) {
             if (!interactionStarted) {
                 interactionStarted = true;
                 hint.style.opacity = 0;
             }
 
-            // Diagnostic Color: Based on how far you moved (speed)
-            let color = '#d4b483'; // Calm Ochre
             if (lastX !== null) {
                 const dx = x - lastX;
                 const dy = y - lastY;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist > 30) color = '#2a5a6b'; // Deep Teal (Fast)
-                else if (dist > 10) color = '#8a8ab0'; // Muted Lavender (Medium)
-            }
+                
+                // Get strictly diagnostic color based on AVERAGE speed
+                const color = getStrictDiagnosticColor(dx, dy);
 
-            particles.push(new Particle(x, y, color));
+                particles.push(new Particle(x, y, color));
+            }
+            
             lastX = x;
             lastY = y;
         }
 
         function animate() {
-            // Clean the canvas every frame
             ctx.fillStyle = '#f8f8f6';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -107,7 +128,6 @@
 
         animate();
 
-        // Direct listeners
         window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
         window.addEventListener('touchmove', e => {
             const touch = e.touches[0];
