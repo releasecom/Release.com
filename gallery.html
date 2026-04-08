@@ -6,7 +6,7 @@
     <title>The Liminal Gallery</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f8f8f6; }
-        canvas { display: block; filter: blur(20px); } /* Heavy blur creates the 'fluid' look */
+        canvas { display: block; filter: blur(8px); } /* Clarified Blur for better eye comfort */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -48,9 +48,10 @@
             constructor(x, y, dx, dy, color) {
                 this.x = x;
                 this.y = y;
-                this.vx = dx * 0.1;
-                this.vy = dy * 0.1;
-                this.radius = Math.random() * 40 + 20;
+                this.vx = dx * 0.15; // Slightly faster movement to feel more fluid
+                this.vy = dy * 0.15;
+                // Increased radius to give the single circle more presence
+                this.radius = Math.random() * 50 + 30; 
                 this.color = color;
                 this.alpha = 1;
             }
@@ -64,7 +65,7 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.alpha -= 0.005; // How fast the color fades back to white
+                this.alpha -= 0.006; // Fades a tiny bit faster to match the clarified look
             }
         }
 
@@ -75,40 +76,3 @@
             }
 
             const speed = Math.sqrt(dx*dx + dy*dy);
-            let color = '#cc994d'; // Warm Honey (Slow)
-            if (speed > 25) color = '#1a6680'; // Deep Teal (Fast)
-            else if (speed > 10) color = '#8080b3'; // Lavender (Medium)
-
-            for(let i = 0; i < 2; i++) {
-                particles.push(new Particle(x, y, dx, dy, color));
-            }
-        }
-
-        function animate() {
-            ctx.fillStyle = '#f8f8f6';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].alpha <= 0) {
-                    particles.splice(i, 1);
-                    i--;
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY, e.movementX, e.movementY));
-        window.addEventListener('touchmove', e => {
-            const touch = e.touches[0];
-            const dx = touch.clientX - (window.lastX || touch.clientX);
-            const dy = touch.clientY - (window.lastY || touch.clientY);
-            window.lastX = touch.clientX; window.lastY = touch.clientY;
-            handleMove(touch.clientX, touch.clientY, dx, dy);
-        });
-
-    </script>
-</body>
-</html>
