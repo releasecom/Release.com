@@ -70,9 +70,9 @@
         class Ripple {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
-                this.radius = 5; 
+                this.radius += 5; 
                 this.color = color;
-                this.alpha = 0.6;
+                this.alpha -= 0.004;
                 this.lineWidth = 15;
             }
             update() {
