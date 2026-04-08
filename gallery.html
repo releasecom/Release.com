@@ -18,7 +18,7 @@
             display: block;
             width: 100vw;
             height: 100vh;
-            /* Creates the soft, organic 'watercolor' feel */
+            /* Creates the soft, watercolor/ink-in-milk look */
             filter: blur(12px) contrast(1.1) brightness(1.05);
         }
 
@@ -32,9 +32,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            pointer-events: none; /* Allows clicks to pass through to the fluid */
+            /* Allows mouse/touch to pass through to the fluid simulation */
+            pointer-events: none; 
             transition: opacity 3s ease;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            z-index: 10;
         }
 
         .instruction-text {
@@ -43,19 +45,21 @@
             letter-spacing: 5px;
             text-transform: uppercase;
             margin-bottom: 40px;
+            user-select: none;
         }
 
-        /* The Doorway back to the Release page */
         .back-link {
             position: absolute;
             bottom: 40px;
-            pointer-events: auto; /* Makes this clickable */
+            /* IMPORTANT: Tells the link to be clickable despite the UI layer */
+            pointer-events: auto; 
             color: rgba(0,0,0,0.2);
             text-decoration: none;
             font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
             transition: color 0.3s ease;
+            cursor: pointer;
         }
 
         .back-link:hover {
@@ -78,6 +82,7 @@
         const canvas = document.getElementById('fluidCanvas');
         const hint = document.getElementById('hint');
 
+        // Setup the fluid simulation
         const fluid = window.WebGLFluid(canvas, {
             IMMEDIATE: true,
             TRIGGER: 'hover',
@@ -99,21 +104,18 @@
         let interactionStarted = false;
         let speedBuffer = [];
 
+        // Determine color based on user interaction speed
         function getDiagnosticColor(speed) {
             speedBuffer.push(speed);
             if (speedBuffer.length > 40) speedBuffer.shift();
             const avg = speedBuffer.reduce((a, b) => a + b, 0) / speedBuffer.length;
 
-            // DIAGNOSTIC LOGIC
             if (avg > 40) {
-                // High Energy/Fast: Deep Sea Teal (Grounding)
-                return { r: 0.1, g: 0.4, b: 0.5 };
+                return { r: 0.1, g: 0.4, b: 0.5 }; // Deep Sea Teal
             } else if (avg > 15) {
-                // Rhythmic/Flow: Soft Lavender (Alignment)
-                return { r: 0.5, g: 0.5, b: 0.7 };
+                return { r: 0.5, g: 0.5, b: 0.7 }; // Soft Lavender
             } else {
-                // Stillness/Slow: Warm Honey (Radiance)
-                return { r: 0.8, g: 0.6, b: 0.3 };
+                return { r: 0.8, g: 0.6, b: 0.3 }; // Warm Honey
             }
         }
 
@@ -124,33 +126,3 @@
             }
 
             const speed = Math.sqrt(dx*dx + dy*dy);
-            const color = getDiagnosticColor(speed);
-
-            fluid.splats([{
-                x: x / window.innerWidth,
-                y: 1.0 - y / window.innerHeight,
-                dx: dx * 5,
-                dy: dy * -5,
-                color: color
-            }]);
-        };
-
-        // Computer Mouse Support
-        window.addEventListener('mousemove', (e) => {
-            handleInteraction(e.clientX, e.clientY, e.movementX, e.movementY);
-        });
-
-        // Mobile Touch Support
-        window.addEventListener('touchmove', (e) => {
-            const touch = e.touches[0];
-            const dx = (touch.clientX - (window.lastX || touch.clientX));
-            const dy = (touch.clientY - (window.lastY || touch.clientY));
-            window.lastX = touch.clientX;
-            window.lastY = touch.clientY;
-            
-            handleInteraction(touch.clientX, touch.clientY, dx, dy);
-        }, { passive: false });
-
-    </script>
-</body>
-</html>
