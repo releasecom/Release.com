@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sanctuary</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0e14;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 200;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+            opacity: 0.8;
+        }
+
+        .choice-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            width: 250px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.5s ease;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-10px);
+        }
+
+        .card h2 {
+            font-size: 14px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            font-size: 12px;
+            opacity: 0.5;
+            line-height: 1.6;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 30px;
+            font-size: 10px;
+            opacity: 0.3;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>The Sanctuary</h1>
+
+    <div class="choice-container">
+        <a href="release.html" class="card">
+            <h2>The Release</h2>
+            <p>Size your stressor and watch it melt away into the dark.</p>
+        </a>
+
+        <a href="gallery.html" class="card">
+            <h2>Liminal Gallery</h2>
+            <p>Enter the luminous void to stir and process your energy.</p>
+        </a>
+    </div>
+
+    <footer>
+        &copy; 2026 Your Name. All rights reserved.
+    </footer>
+
+</body>
+</html>
