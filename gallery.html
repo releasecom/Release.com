@@ -6,13 +6,13 @@
     <title>The Liminal Gallery</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f8f8f6; }
-        canvas { display: block; filter: blur(8px); cursor: crosshair; } 
+        canvas { display: block; width: 100vw; height: 100vh; }
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             pointer-events: none; font-family: sans-serif; z-index: 10;
         }
-        .instruction-text { color: rgba(0,0,0,0.1); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; }
+        .instruction-text { color: rgba(0,0,0,0.15); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; }
         .back-link {
             position: absolute; bottom: 40px; pointer-events: auto; 
             color: rgba(0,0,0,0.2); text-decoration: none; font-size: 10px;
@@ -23,104 +23,67 @@
 <body>
 
     <div id="ui-layer">
-        <div class="instruction-text" id="hint">Stir the void</div>
+        <div class="instruction-text" id="hint">Enter the space</div>
         <a href="index.html" class="back-link">← Return to Sanctuary</a>
     </div>
 
-    <canvas id="canvas"></canvas>
+    <canvas id="fluidCanvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webgl-fluid/0.3.2/webgl-fluid.min.js"></script>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.querySelector('canvas');
         const hint = document.getElementById('hint');
-        
-        let particles = [];
+        let fluid;
+
+        // Initialize only when the window and library are fully ready
+        window.addEventListener('load', () => {
+            if (typeof WebGLFluid !== 'undefined') {
+                fluid = WebGLFluid(canvas, {
+                    COLORFUL: false,
+                    BACK_COLOR: { r: 0.97, g: 0.97, b: 0.96 },
+                    DENSITY_DISSIPATION: 2.0,
+                    SPLAT_RADIUS: 0.3,
+                    BLOOM: true
+                });
+            }
+        });
+
         let interactionStarted = false;
-        let lastX = 0;
-        let lastY = 0;
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        class Particle {
-            constructor(x, y, dx, dy, color) {
-                this.x = x;
-                this.y = y;
-                this.vx = dx * 0.1;
-                this.vy = dy * 0.1;
-                this.radius = Math.random() * 40 + 30; 
-                this.color = color;
-                this.alpha = 1;
-            }
-            draw() {
-                ctx.globalAlpha = this.alpha;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.alpha -= 0.007; 
-            }
-        }
-
-        function handleMove(x, y) {
+        function handleInteraction(x, y, dx, dy) {
+            if (!fluid) return; // Wait until engine is ready
+            
             if (!interactionStarted) {
                 interactionStarted = true;
                 hint.style.opacity = 0;
             }
 
-            const dx = x - lastX;
-            const dy = y - lastY;
             const speed = Math.sqrt(dx*dx + dy*dy);
+            let color = { r: 0.8, g: 0.6, b: 0.3 }; // Gold
+            if (speed > 30) color = { r: 0.1, g: 0.4, b: 0.5 }; // Teal
             
-            // Refined Color Palette
-            let color = '#ccac7a'; // Muted Gold (Slow)
-            if (speed > 25) color = '#1a6680'; // Teal (Fast)
-            else if (speed > 10) color = '#787899'; // Lavender (Medium)
-
-            // Limit particle creation so it doesn't lag
-            if (speed > 2) {
-                particles.push(new Particle(x, y, dx, dy, color));
-            }
-
-            lastX = x;
-            lastY = y;
+            fluid.splats([{
+                x: x / window.innerWidth,
+                y: 1.0 - y / window.innerHeight,
+                dx: dx * 8,
+                dy: dy * -8,
+                color: color
+            }]);
         }
 
-        function animate() {
-            ctx.fillStyle = '#f8f8f6';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Catch both Mouse and Touch
+        window.addEventListener('mousemove', e => {
+            handleInteraction(e.clientX, e.clientY, e.movementX, e.movementY);
+        });
 
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].alpha <= 0) {
-                    particles.splice(i, 1);
-                    i--;
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-
-        // Start animation immediately
-        animate();
-
-        // Standard Listeners
-        window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
-        
         window.addEventListener('touchmove', e => {
-            e.preventDefault(); // Prevents the screen from wobbling on mobile
             const touch = e.touches[0];
-            handleMove(touch.clientX, touch.clientY);
+            const dx = touch.clientX - (window.lastX || touch.clientX);
+            const dy = touch.clientY - (window.lastY || touch.clientY);
+            window.lastX = touch.clientX; window.lastY = touch.clientY;
+            handleInteraction(touch.clientX, touch.clientY, dx, dy);
         }, { passive: false });
-
     </script>
 </body>
 </html>
