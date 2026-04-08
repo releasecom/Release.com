@@ -2,178 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Release Space</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Forge</title>
     <style>
-        :root {
-            --bg-color: #0b0e14;
-            --shape-color: radial-gradient(circle, #a1c4fd 0%, #c2e9fb 100%);
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        #shape-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-grow: 1;
-            width: 100%;
-        }
-
-        #release-shape {
-            background: var(--shape-color);
-            border-radius: 50%;
-            filter: blur(30px);
-            box-shadow: 0 0 50px rgba(161, 196, 253, 0.5);
-            transition: width 0.1s linear, height 0.1s linear, opacity 0.1s linear;
-            animation: pulse 5s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-        }
-
-        #controls {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            gap: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 10;
-        }
-
-        label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; }
-        input[type=range] { width: 150px; cursor: pointer; }
-
-        button {
-            margin-top: 10px;
-            cursor: pointer;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            background: #ffffff;
-            color: #0b0e14;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        button:hover {
-            background: #f0f0f0;
-            transform: translateY(-1px);
-        }
-
-        footer {
-            position: absolute;
-            bottom: 15px;
-            font-size: 10px;
-            opacity: 0.4;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #0a0a0a; font-family: sans-serif; touch-action: none; }
+        canvas { display: block; filter: blur(12px) contrast(1.4); }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
+        .instruction-text { color: rgba(255,255,255,0.2); font-size: 12px; letter-spacing: 8px; text-transform: uppercase; text-align: center; }
+        .back-link { position: absolute; bottom: 40px; pointer-events: auto; color: rgba(255,255,255,0.3); text-decoration: none; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
     </style>
 </head>
 <body>
-
-    <div id="shape-container">
-        <div id="release-shape"></div>
+    <div id="ui-layer">
+        <div class="instruction-text" id="hint">EXPEL THE WEIGHT<br>TAP TO ACTIVATE</div>
+        <a href="index.html" class="back-link">← Return</a>
     </div>
-
-    <div id="controls">
-        <label>Size your stressor</label>
-        <input type="range" id="sizeSlider" min="0" max="800" value="400">
-        
-        <label>Release Timer</label>
-        <select id="timerSelect">
-            <option value="30">30 Seconds</option>
-            <option value="300">5 Minutes</option>
-            <option value="900">15 Minutes</option>
-        </select>
-
-        <button id="startBtn">begin release</button>
-    </div>
-
-    <footer>
-        &copy; 2026 Your Name. All rights reserved.
-    </footer>
-
+    <canvas id="forgeCanvas"></canvas>
     <script>
-        const shape = document.getElementById('release-shape');
-        const sizeSlider = document.getElementById('sizeSlider');
-        const timerSelect = document.getElementById('timerSelect');
-        const startBtn = document.getElementById('startBtn');
+        const canvas = document.getElementById('forgeCanvas'), ctx = canvas.getContext('2d'), hint = document.getElementById('hint');
+        let particles = [], audioCtx, interactionStarted = false;
 
-        let releaseInterval;
-        const MAX_VAL = 800;
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
 
-        function updateVisuals(sliderValue) {
-            // Reversed Logic: Subtract slider value from Max to get size
-            let actualSize = MAX_VAL - sliderValue;
-            
-            shape.style.width = actualSize + 'px';
-            shape.style.height = actualSize + 'px';
-            
-            // Opacity fades as actualSize approaches 0
-            let opacityValue = (actualSize / MAX_VAL);
-            shape.style.opacity = actualSize <= 0 ? 0 : opacityValue;
+        function startForge() {
+            if (interactionStarted) return;
+            interactionStarted = true;
+            hint.style.opacity = 0;
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            audioCtx = new AudioContext();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(174, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start();
         }
 
-        sizeSlider.addEventListener('input', () => {
-            clearInterval(releaseInterval);
-            updateVisuals(sizeSlider.value);
-        });
-
-        startBtn.addEventListener('click', () => {
-            clearInterval(releaseInterval);
-            
-            let duration = parseInt(timerSelect.value);
-            let currentSliderPos = parseFloat(sizeSlider.value);
-            
-            // We want to move the slider from current position TO 800 (Gone)
-            let distanceToCover = MAX_VAL - currentSliderPos;
-            
-            if (distanceToCover <= 0) return; 
-
-            const intervalMs = 100; 
-            const totalSteps = (duration * 1000) / intervalMs;
-            const incrementPerStep = distanceToCover / totalSteps;
-
-            releaseInterval = setInterval(() => {
-                currentSliderPos += incrementPerStep;
-                
-                if (currentSliderPos >= MAX_VAL) {
-                    currentSliderPos = MAX_VAL;
-                    clearInterval(releaseInterval);
+        class Plume {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = -Math.random() * 3; 
+                this.radius = Math.random() * 50 + 20;
+                this.life = 1.0;
+                this.gravity = 0.02; // The 'Weight'
+                this.color = Math.random() > 0.5 ? '#1a2a3a' : '#2d332a'; 
+            }
+            draw() {
+                ctx.globalAlpha = this.life * 0.5;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; ctx.fill();
+            }
+            update() { 
+                this.vy += this.gravity; // Gravity makes it fall after the initial rise
+                this.x += this.vx; 
+                this.y += this.vy; 
+                this.life -= 0.003; 
+                // If it hits the bottom, it 'settles'
+                if (this.y > canvas.height - 20) {
+                    this.y = canvas.height - 20;
+                    this.vx *= 0.9;
                 }
-                
-                sizeSlider.value = currentSliderPos;
-                updateVisuals(currentSliderPos);
-            }, intervalMs);
-        });
+            }
+        }
 
-        // Initialize at the "moderate" middle ground
-        updateVisuals(400);
+        function handleExpel(x, y) {
+            if (!interactionStarted) return;
+            for (let i = 0; i < 2; i++) particles.push(new Plume(x, y));
+        }
+
+        function animate() {
+            ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(i, 1); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+        window.addEventListener('mousedown', startForge);
+        window.addEventListener('mousemove', e => handleExpel(e.clientX, e.clientY));
+        window.addEventListener('touchstart', startForge);
+        window.addEventListener('touchmove', e => handleExpel(e.touches[0].clientX, e.touches[0].clientY));
     </script>
 </body>
 </html>
