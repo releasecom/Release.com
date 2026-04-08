@@ -48,7 +48,7 @@
             user-select: none;
         }
 
-        .back-link {
+     .back-link {
             position: absolute;
             bottom: 40px;
             /* IMPORTANT: Tells the link to be clickable despite the UI layer */
@@ -60,10 +60,12 @@
             text-transform: uppercase;
             transition: color 0.3s ease;
             cursor: pointer;
+            z-index: 20; /* Ensures it sits above the fluid canvas */
         }
 
         .back-link:hover {
             color: rgba(0,0,0,0.5);
+        }
         }
     </style>
 </head>
