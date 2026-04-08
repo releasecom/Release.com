@@ -6,13 +6,13 @@
     <title>The Liminal Gallery</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f8f8f6; }
-        canvas { display: block; width: 100vw; height: 100vh; filter: blur(15px) contrast(1.1); }
+        canvas { display: block; width: 100vw; height: 100vh; }
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            pointer-events: none; transition: opacity 3s ease; font-family: sans-serif; z-index: 10;
+            pointer-events: none; font-family: sans-serif; z-index: 10;
         }
-        .instruction-text { color: rgba(0,0,0,0.15); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; user-select: none; }
+        .instruction-text { color: rgba(0,0,0,0.15); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; }
         .back-link {
             position: absolute; bottom: 40px; pointer-events: auto; 
             color: rgba(0,0,0,0.2); text-decoration: none; font-size: 10px;
@@ -32,61 +32,58 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/webgl-fluid/0.3.2/webgl-fluid.min.js"></script>
 
     <script>
-        // Diagnostic check
-        window.onload = function() {
-            if (typeof WebGLFluid === 'undefined') {
-                console.error("Engine failed. Check browser security settings.");
-                return;
+        const canvas = document.querySelector('canvas');
+        const hint = document.getElementById('hint');
+        let fluid;
+
+        // Initialize only when the window and library are fully ready
+        window.addEventListener('load', () => {
+            if (typeof WebGLFluid !== 'undefined') {
+                fluid = WebGLFluid(canvas, {
+                    COLORFUL: false,
+                    BACK_COLOR: { r: 0.97, g: 0.97, b: 0.96 },
+                    DENSITY_DISSIPATION: 2.0,
+                    SPLAT_RADIUS: 0.3,
+                    BLOOM: true
+                });
+            }
+        });
+
+        let interactionStarted = false;
+
+        function handleInteraction(x, y, dx, dy) {
+            if (!fluid) return; // Wait until engine is ready
+            
+            if (!interactionStarted) {
+                interactionStarted = true;
+                hint.style.opacity = 0;
             }
 
-            const canvas = document.querySelector('canvas');
-            const hint = document.getElementById('hint');
+            const speed = Math.sqrt(dx*dx + dy*dy);
+            let color = { r: 0.8, g: 0.6, b: 0.3 }; // Gold
+            if (speed > 30) color = { r: 0.1, g: 0.4, b: 0.5 }; // Teal
             
-            const fluid = WebGLFluid(canvas, {
-                COLORFUL: false,
-                DENSITY_DISSIPATION: 2.5,
-                VELOCITY_DISSIPATION: 1.5,
-                PRESSURE: 0.8,
-                CURL: 3,
-                SPLAT_RADIUS: 0.3,
-                BACK_COLOR: { r: 0.97, g: 0.97, b: 0.96 },
-                BLOOM: true,
-                SHADING: false
-            });
+            fluid.splats([{
+                x: x / window.innerWidth,
+                y: 1.0 - y / window.innerHeight,
+                dx: dx * 8,
+                dy: dy * -8,
+                color: color
+            }]);
+        }
 
-            let interactionStarted = false;
+        // Catch both Mouse and Touch
+        window.addEventListener('mousemove', e => {
+            handleInteraction(e.clientX, e.clientY, e.movementX, e.movementY);
+        });
 
-            function handleInteraction(x, y, dx, dy) {
-                if (!interactionStarted) {
-                    interactionStarted = true;
-                    hint.style.opacity = 0;
-                }
-
-                // Simple diagnostic speed check
-                const speed = Math.sqrt(dx*dx + dy*dy);
-                let color = { r: 0.8, g: 0.6, b: 0.3 }; // Default Gold
-                if (speed > 30) color = { r: 0.1, g: 0.4, b: 0.5 }; // Teal
-                else if (speed > 10) color = { r: 0.5, g: 0.5, b: 0.7 }; // Lavender
-
-                fluid.splats([{
-                    x: x / window.innerWidth,
-                    y: 1.0 - y / window.innerHeight,
-                    dx: dx * 6,
-                    dy: dy * -6,
-                    color: color
-                }]);
-            }
-
-            window.addEventListener('mousemove', e => handleInteraction(e.clientX, e.clientY, e.movementX, e.movementY));
-            
-            window.addEventListener('touchmove', e => {
-                const touch = e.touches[0];
-                const dx = touch.clientX - (window.lastX || touch.clientX);
-                const dy = touch.clientY - (window.lastY || touch.clientY);
-                window.lastX = touch.clientX; window.lastY = touch.clientY;
-                handleInteraction(touch.clientX, touch.clientY, dx, dy);
-            }, { passive: false });
-        };
+        window.addEventListener('touchmove', e => {
+            const touch = e.touches[0];
+            const dx = touch.clientX - (window.lastX || touch.clientX);
+            const dy = touch.clientY - (window.lastY || touch.clientY);
+            window.lastX = touch.clientX; window.lastY = touch.clientY;
+            handleInteraction(touch.clientX, touch.clientY, dx, dy);
+        }, { passive: false });
     </script>
 </body>
 </html>
