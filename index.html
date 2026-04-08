@@ -14,13 +14,12 @@
             text-align: center; color: white; pointer-events: none;
         }
 
-        h1 { font-weight: 200; letter-spacing: 15px; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        h1 { font-weight: 200; letter-spacing: 15px; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; }
         .subtitle { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 50px; opacity: 0.5; }
 
-        /* The Breath Anchor */
         #breath-pacer {
-            position: absolute; width: 300px; height: 300px;
-            border: 1px solid rgba(255,255,255,0.05);
+            position: absolute; width: 350px; height: 350px;
+            border: 1px solid rgba(255,255,255,0.03);
             border-radius: 50%;
             animation: breathe 8s infinite ease-in-out;
             pointer-events: none; z-index: 5;
@@ -28,17 +27,22 @@
 
         @keyframes breathe {
             0%, 100% { transform: scale(0.8); opacity: 0.1; }
-            50% { transform: scale(1.2); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.25; }
         }
 
         .choice-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; pointer-events: auto; }
+        
         .card { 
-            width: 180px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.05); 
-            border-radius: 2px; text-decoration: none; color: white; 
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(15px);
-            transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+            width: 200px; padding: 40px 20px; border: 1px solid rgba(255, 255, 255, 0.05); 
+            border-radius: 4px; text-decoration: none; color: white; 
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
         }
-        .card:hover { border-color: rgba(255, 255, 255, 0.4); transform: translateY(-8px); background: rgba(255, 255, 255, 0.05); }
+        
+        .card:hover { border-color: rgba(255, 255, 255, 0.4); transform: translateY(-8px); background: rgba(255, 255, 255, 0.03); }
+        
+        .card h2 { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; }
+        .card p { font-size: 10px; opacity: 0.5; line-height: 1.6; font-weight: 300; letter-spacing: 1px; }
 
         #audio-trigger { 
             position: absolute; top: 30px; pointer-events: auto;
@@ -46,7 +50,6 @@
             font-size: 9px; letter-spacing: 4px; opacity: 0.4; text-transform: uppercase; 
             cursor: pointer; transition: all 0.4s;
         }
-        #audio-trigger:hover { opacity: 1; border-color: rgba(255,255,255,0.4); }
     </style>
 </head>
 <body>
@@ -59,9 +62,18 @@
         <div class="subtitle">A Sanctuary for Processing</div>
         
         <div class="choice-container">
-            <a href="release.html" class="card"><h2>The Release</h2></a>
-            <a href="gallery.html" class="card"><h2>Liminal Void</h2></a>
-            <a href="forge.html" class="card"><h2>The Forge</h2></a>
+            <a href="release.html" class="card">
+                <h2>The Release</h2>
+                <p>Dissolve the noise. Size your stress and watch it fade into the dark.</p>
+            </a>
+            <a href="gallery.html" class="card">
+                <h2>Liminal Void</h2>
+                <p>Radiate energy. Stir the white light and watch your energy bloom.</p>
+            </a>
+            <a href="forge.html" class="card">
+                <h2>The Forge</h2>
+                <p>Expel the weight. A heavy space to let go and find your rhythm.</p>
+            </a>
         </div>
     </div>
 
@@ -79,8 +91,8 @@
                 this.radius = Math.random() * 200 + 150;
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 1.8;
-                this.vy = (Math.random() - 0.5) * 1.8;
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
                 this.color = ['#2d4a3e', '#b89d70', '#5e5e8a', '#1e3a47'][Math.floor(Math.random()*4)];
             }
             update() {
@@ -115,7 +127,6 @@
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start();
             document.getElementById('audio-trigger').innerText = "Sanctuary Active (528Hz)";
-            document.getElementById('audio-trigger').style.borderColor = "transparent";
         }
     </script>
 </body>
