@@ -6,13 +6,11 @@
     <title>The Luminous Gallery</title>
     <style>
         :root {
-            /* Calm, grounding layout variables */
-            --bg-deep: #0a0c10;
-            --panel-bg: rgba(15, 18, 23, 0.75);
+            --bg-deep: #0a0d14;
+            --panel-bg: rgba(15, 18, 26, 0.8);
             --panel-border: rgba(255, 255, 255, 0.08);
             --text-primary: #cbd5e1;
             --text-muted: #64748b;
-            --accent-soft: #94a3b8;
             --danger-soft: #fca5a5;
         }
 
@@ -22,10 +20,16 @@
             font-family: 'Segoe UI', Roboto, sans-serif; 
         }
         
-        /* Ambient Canvas Dynamic Layer */
-        #bgCanvas { position: absolute; top: 0; left: 0; z-index: 1; filter: blur(40px); opacity: 0.7; }
+        /* Adjusted blur and opacity so the GPU can render it clearly without washing out */
+        #bgCanvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            z-index: 1; 
+            filter: blur(25px); 
+            opacity: 0.85; 
+        }
         
-        /* Master Architecture Windows */
         .app-view {
             display: none;
             position: relative;
@@ -43,7 +47,6 @@
             justify-content: center;
         }
 
-        /* --- TAB 1: HOMEPAGE (OBSERVATION HUB) --- */
         #content {
             text-align: center; color: white; transition: opacity 1.5s ease;
             pointer-events: none; 
@@ -57,7 +60,7 @@
         .card { 
             width: 180px; padding: 35px 20px; border: 1px solid var(--panel-border); 
             border-radius: 6px; text-decoration: none; color: var(--text-primary); 
-            background: rgba(10, 12, 16, 0.85); backdrop-filter: blur(8px);
+            background: rgba(10, 13, 20, 0.9); backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
@@ -65,7 +68,6 @@
         .card h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; font-weight: 400; }
         .card p { font-size: 10px; opacity: 0.5; line-height: 1.6; margin: 0; }
 
-        /* Top Bar Dynamic Controls Navigation */
         #top-ui { 
             position: absolute; top: 40px; width: 100%; display: flex; 
             justify-content: center; align-items: center; gap: 15px; z-index: 100; 
@@ -82,12 +84,12 @@
         .ui-element:hover { border-color: rgba(255,255,255,0.2); color: white; }
         .ui-element.active-state { border-color: var(--danger-soft); color: var(--danger-soft); }
 
-        /* Observation Mode Isolation Rules */
         .observe-active #content { opacity: 0.00; pointer-events: none; }
         .observe-active #top-ui { opacity: 0.15; }
         .observe-active #top-ui:hover { opacity: 1; }
 
-        /* --- TAB 3: SANCTUARY REGULATION VIEW --- */
         .video-background-layer {
             position: absolute;
-            top: 0; left: 0; width
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2;
+            pointer-events: none;
