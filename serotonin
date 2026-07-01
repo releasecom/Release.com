@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Sanctuary - Regulation Space</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(255, 255, 255, 0.08);
+            --panel-border: rgba(255, 255, 255, 0.15);
+            --text-color: #e2e8f0;
+            --accent-color: #a78bfa;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* Video Background Wrapper */
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle, #1e1b4b 0%, #0f172a 100%);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 1.5s ease-in-out;
+            opacity: 0;
+        }
+
+        video.active {
+            opacity: 0.6; /* Dimmed slightly to keep it calming and readable */
+        }
+
+        /* Overlay Interface */
+        .interface-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            padding: 30px;
+            background: linear-gradient(to bottom, rgba(11,15,25,0.4) 0%, rgba(0,0,0,0) 50%, rgba(11,15,25,0.6) 100%);
+        }
+
+        header {
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin: 0 0 5px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: 200;
+            color: var(--accent-color);
+            text-shadow: 0 2px 10px rgba(167, 139, 250, 0.3);
+        }
+
+        /* Control Panels */
+        .controls-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto w-100;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px;
+            width: 280px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 8px;
+        }
+
+        /* Option Selectors */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            color: var(--text-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.13);
+        }
+
+        .option-btn.selected {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.2);
+        }
+
+        /* Action Buttons */
+        .action-zone {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .start-btn {
+            background: var(--accent-color);
+            color: #111827;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.6);
+        }
+
+        .start-btn.active {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Hidden audio element */
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-container">
+        <video id="sanctuary-video" loop muted playsinline></video>
+    </div>
+
+    <audio id="sanctuary-audio" loop></audio>
+
+    <div class="interface-layer">
+        
+        <header>
+            <h1>Nervous System Regulation Space</h1>
+            <div class="timer-display" id="timer-text">00:00</div>
+        </header>
+
+        <div class="controls-container" id="controls-panel">
+            
+            <div class="panel">
+                <h2>1. Visual Landscapes</h2>
+                <div class="options-grid" id="visual-options">
+                    <button class="option-btn" data-type="visual" data-value="ocean">Deep Ocean & Jellyfish</button>
+                    <button class="option-btn" data-type="visual" data-value="animals">Gentle Animals</button>
+                    <button class="option-btn" data-type="visual" data-value="plants">Swinging Plants & Forests</button>
+                    <button class="option-btn" data-type="visual" data-value="cozy">Cozy, Still Spaces</button>
+                    <button class="option-btn" data-type="visual" data-value="joy">Pure Human Joy</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>2. Soundscapes</h2>
+                <div class="options-grid" id="audio-options">
+                    <button class="option-btn" data-type="audio" data-value="podcast">Today's Oracle Story</button>
+                    <button class="option-btn" data-type="audio" data-value="hz">528Hz DNA Repair Frequency</button>
+                    <button class="option-btn" data-type="audio" data-value="nature">Calming Nature Rainfall</button>
+                    <button class="option-btn" data-type="audio" data-value="meditation">Ambient Meditative Music</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>3. Decompression Time</h2>
+                <div class="options-grid" id="duration-options">
+                    <button class="option-btn" data-type="duration" data-value="5">5 Minutes</button>
+                    <button class="option-btn" data-type="duration" data-value="15">15 Minutes</button>
+                    <button class="option-btn" data-type="duration" data-value="30">30 Minutes</button>
+                    <button class="option-btn" data-type="duration" data-value="60">1 Hour</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="action-zone">
+            <button class="start-btn" id="action-btn">Begin Regulation</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- PLACEHOLDER ASSETS ---
+        // Replace these URLs with your actual host links (GitHub Pages hosted videos/audios or direct links)
+        const mediaAssets = {
+            visuals: {
+                ocean: ['https://assets.mixkit.co/videos/preview/mixkit-jellyfish-under-water-1434-large.mp4'],
+                animals: ['https://assets.mixkit.co/videos/preview/mixkit-deer-in-a-snowy-forest-42223-large.mp4'],
+                plants: ['https://assets.mixkit.co/videos/preview/mixkit-sunlight-through-trees-in-a-forest-42314-large.mp4'],
+                cozy: ['https://assets.mixkit.co/videos/preview/mixkit-coffee-cup-with-a-reusable-sleeve-43187-large.mp4'],
+                joy: ['https://assets.mixkit.co/videos/preview/mixkit-girl-smiling-holding-a-sparkler-40280-large.mp4']
+            },
+            audios: {
+                podcast: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Replace with your daily podcast link
+                hz: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+                nature: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+                meditation: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'
+            }
+        };
+
+        // --- STATE MANAGEMENT ---
+        let selectedVisuals = [];
+        let selectedAudio = null;
+        let selectedDuration = 5; // Default 5 mins
+        let timerInterval = null;
+        let videoRotationInterval = null;
+        let totalSecondsRemaining = 0;
+        let isRunning = false;
+
+        const videoElement = document.getElementById('sanctuary-video');
+        const audioElement = document.getElementById('sanctuary-audio');
+        const actionBtn = document.getElementById('action-btn');
+        const timerText = document.getElementById('timer-text');
+        const controlsPanel = document.getElementById('controls-panel');
+
+        // --- INTERFACE INTERACTION ---
+        document.querySelectorAll('.option-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const type = button.dataset.type;
+                const value = button.dataset.value;
+
+                if (type === 'visual') {
+                    // Multi-select for visuals
+                    if (selectedVisuals.includes(value)) {
+                        selectedVisuals = selectedVisuals.filter(v => v !== value);
+                        button.classList.remove('selected');
+                    } else {
+                        selectedVisuals.push(value);
+                        button.classList.add('selected');
+                    }
+                } else if (type === 'audio') {
+                    // Single-select for audio
+                    document.querySelectorAll('[data-type="audio"]').forEach(b => b.classList.remove('selected'));
+                    if (selectedAudio === value) {
+                        selectedAudio = null;
+                    } else {
+                        selectedAudio = value;
+                        button.classList.add('selected');
+                    }
+                } else if (type === 'duration') {
+                    // Single-select for duration
+                    document.querySelectorAll('[data-type="duration"]').forEach(b => b.classList.remove('selected'));
+                    selectedDuration = parseInt(value);
+                    button.classList.add('selected');
+                }
+            });
+        });
+
+        // --- CORE FUNCTIONALITY ---
+        actionBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                if (selectedVisuals.length === 0) {
+                    alert('Please select at least one Visual Landscape category to ground your eyes.');
+                    return;
+                }
+                startSession();
+            } else {
+                stopSession();
+            }
+        });
+
+        function startSession() {
+            isRunning = true;
+            actionBtn.textContent = "End Session Early";
+            actionBtn.classList.add('active');
+            
+            // Softly fade UI controls out so the user can focus purely on the visuals
+            controlsPanel.style.transition = "opacity 1s ease";
+            controlsPanel.style.opacity = "0";
+            controlsPanel.style.pointerEvents = "none";
+
+            // Initialize Timer
+            totalSecondsRemaining = selectedDuration * 60;
+            updateTimerDisplay();
+            timerInterval = setInterval(countdown, 1000);
+
+            // Initialize Audio
+            if (selectedAudio && mediaAssets.audios[selectedAudio]) {
+                audioElement.src = mediaAssets.audios[selectedAudio];
+                audioElement.play().catch(e => console.log("Audio playback blocked by browser settings.", e));
+            }
+
+            // Initialize Video Rotation (Plays immediately, then rotates every 30 seconds)
+            playRandomSelectedVideo();
+            videoRotationInterval = setInterval(playRandomSelectedVideo, 30000); // 30-second timer
+        }
+
+        function stopSession() {
+            isRunning = false;
+            actionBtn.textContent = "Begin Regulation";
+            actionBtn.classList.remove('active');
+            
+            // Bring UI back
+            controlsPanel.style.opacity = "1";
+            controlsPanel.style.pointerEvents = "auto";
+
+            // Stop tracking loops
+            clearInterval(timerInterval);
+            clearInterval(videoRotationInterval);
+            
+            // Halt Media
+            videoElement.classList.remove('active');
+            videoElement.pause();
+            audioElement.pause();
+            
+            timerText.textContent = "00:00";
+        }
+
+        function countdown() {
+            if (totalSecondsRemaining <= 0) {
+                stopSession();
+                alert("Your regulation session is complete. Take a deep breath before returning to the world.");
+            } else {
+                totalSecondsRemaining--;
+                updateTimerDisplay();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(totalSecondsRemaining / 60);
+            const seconds = totalSecondsRemaining % 60;
+            timerText.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function playRandomSelectedVideo() {
+            if (selectedVisuals.length === 0) return;
+            
+            // Pick a random category from user selections
+            const randomCategory = selectedVisuals[Math.floor(Math.random() * selectedVisuals.length)];
+            const videoPool = mediaAssets.visuals[randomCategory];
+            const randomVideoUrl = videoPool[Math.floor(Math.random() * videoPool.length)];
+
+            // Soft Crossfade Effect using CSS transitions
+            videoElement.classList.remove('active');
+            
+            setTimeout(() => {
+                videoElement.src = randomVideoUrl;
+                videoElement.load();
+                videoElement.play().then(() => {
+                    videoElement.classList.add('active');
+                }).catch(e => console.log("Video autoplay blocked.", e));
+            }, 1500); // Wait for the fade-out to finish before swapping source
+        }
+    </script>
+</body>
+</html>
