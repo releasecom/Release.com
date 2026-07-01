@@ -5,151 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Luminous Gallery</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #050505; font-family: 'Segoe UI', sans-serif; }
+        :root {
+            /* Calm, grounding layout variables */
+            --bg-deep: #0a0c10;
+            --panel-bg: rgba(15, 18, 23, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #cbd5e1;
+            --text-muted: #64748b;
+            --accent-soft: #94a3b8;
+            --danger-soft: #fca5a5;
+        }
+
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background-color: var(--bg-deep); 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+        }
         
-        /* Reduced blur to prevent "blackout" on some GPUs */
-        #bgCanvas { position: absolute; top: 0; left: 0; z-index: 1; filter: blur(30px); opacity: 1; }
+        /* Ambient Canvas Dynamic Layer */
+        #bgCanvas { position: absolute; top: 0; left: 0; z-index: 1; filter: blur(40px); opacity: 0.7; }
         
+        /* Master Architecture Windows */
+        .app-view {
+            display: none;
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            width: 100%;
+            box-sizing: border-box;
+            padding-top: 100px;
+        }
+        
+        .app-view.active-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- TAB 1: HOMEPAGE (OBSERVATION HUB) --- */
         #content {
-            position: relative; z-index: 10; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center; color: white; transition: opacity 1.5s ease;
             pointer-events: none; 
         }
 
-        h1 { font-weight: 200; letter-spacing: 12px; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; }
-        .subtitle { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 50px; opacity: 0.6; }
+        h1 { font-weight: 200; letter-spacing: 12px; text-transform: uppercase; font-size: 22px; margin-bottom: 10px; color: #e2e8f0; }
+        .subtitle { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 50px; opacity: 0.5; color: var(--text-primary); }
 
-        .choice-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; pointer-events: auto; transition: opacity 1.5s; }
+        .choice-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; pointer-events: auto; }
         
         .card { 
-            width: 180px; padding: 35px 20px; border: 1px solid rgba(255, 255, 255, 0.15); 
-            border-radius: 4px; text-decoration: none; color: white; 
-            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
-            transition: all 0.5s ease;
+            width: 180px; padding: 35px 20px; border: 1px solid var(--panel-border); 
+            border-radius: 6px; text-decoration: none; color: var(--text-primary); 
+            background: rgba(10, 12, 16, 0.85); backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        .card:hover { border-color: rgba(255, 255, 255, 0.6); transform: translateY(-5px); }
-        .card h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
-        .card p { font-size: 10px; opacity: 0.6; line-height: 1.6; }
+        .card:hover { border-color: rgba(255, 255, 255, 0.3); transform: translateY(-4px); color: white; }
+        .card h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; font-weight: 400; }
+        .card p { font-size: 10px; opacity: 0.5; line-height: 1.6; margin: 0; }
 
+        /* Top Bar Dynamic Controls Navigation */
         #top-ui { 
             position: absolute; top: 40px; width: 100%; display: flex; 
-            justify-content: center; align-items: center; gap: 20px; z-index: 100; 
+            justify-content: center; align-items: center; gap: 15px; z-index: 100; 
+            transition: opacity 0.8s ease;
         }
 
         .ui-element { 
             font-size: 9px; letter-spacing: 3px; text-transform: uppercase; 
-            background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.2); 
-            color: white; padding: 10px 18px; cursor: pointer; pointer-events: auto;
+            background: var(--panel-bg); border: 1px solid var(--panel-border); 
+            color: var(--text-primary); padding: 11px 20px; cursor: pointer; pointer-events: auto;
+            border-radius: 4px; transition: all 0.3s;
+            font-family: inherit;
         }
+        .ui-element:hover { border-color: rgba(255,255,255,0.2); color: white; }
+        .ui-element.active-state { border-color: var(--danger-soft); color: var(--danger-soft); }
 
-        /* Observation Mode Logic */
-        .observe-active #content { opacity: 0.02; }
-        .observe-active #content:hover { opacity: 0.9; }
-    </style>
-</head>
-<body id="main-body">
-    <canvas id="bgCanvas"></canvas>
-    
-    <div id="top-ui">
-        <button class="ui-element" onclick="toggleObserve()" id="obs-btn">Observation: Off</button>
-        <select class="ui-element" id="freq-select" onchange="updateFrequency()">
-            <option value="0">Silent Sanctuary</option>
-            <option value="528">528Hz - Miracle</option>
-            <option value="417">417Hz - Change</option>
-            <option value="174">174Hz - Healing</option>
-        </select>
-    </div>
+        /* Observation Mode Isolation Rules */
+        .observe-active #content { opacity: 0.00; pointer-events: none; }
+        .observe-active #top-ui { opacity: 0.15; }
+        .observe-active #top-ui:hover { opacity: 1; }
 
-    <div id="content">
-        <h1>The Luminous Gallery</h1>
-        <div class="subtitle">A Sanctuary for Processing</div>
-        <div class="choice-container">
-            <a href="release.html" class="card"><h2>The Release</h2><p>Dissolve the noise.</p></a>
-            <a href="gallery.html" class="card"><h2>Liminal Void</h2><p>Radiate energy.</p></a>
-            <a href="forge.html" class="card"><h2>The Forge</h2><p>Expel the weight.</p></a>
-        </div>
-    </div>
-
-    <script>
-        const canvas = document.getElementById('bgCanvas');
-        const ctx = canvas.getContext('2d');
-        let shapes = [], audioCtx, oscillator, gainNode;
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        class LuminousBlob {
-            constructor() {
-                this.radius = Math.random() * 150 + 150;
-                // Ensure they start on screen
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 1.2;
-                this.vy = (Math.random() - 0.5) * 1.2;
-                // High-vibrancy palette
-                this.color = ['#4ade80', '#fbbf24', '#818cf8', '#22d3ee', '#f87171'][Math.floor(Math.random()*5)];
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
-        }
-
-        for(let i=0; i<12; i++) shapes.push(new LuminousBlob());
-
-        function animate() {
-            // Draw background
-            ctx.fillStyle = '#050505';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw shapes
-            shapes.forEach(s => {
-                s.update();
-                s.draw();
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        function toggleObserve() {
-            const body = document.getElementById('main-body');
-            const btn = document.getElementById('obs-btn');
-            body.classList.toggle('observe-active');
-            btn.innerText = body.classList.contains('observe-active') ? "Observation: On" : "Observation: Off";
-        }
-
-        function updateFrequency() {
-            const freq = document.getElementById('freq-select').value;
-            if (freq == 0) {
-                if(gainNode) gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
-                return;
-            }
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                oscillator = audioCtx.createOscillator();
-                gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start();
-            }
-            oscillator.frequency.exponentialRampToValueAtTime(freq, audioCtx.currentTime + 1);
-            gainNode.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 1.5);
-        }
-    </script>
-</body>
-</html>
+        /* --- TAB 3: SANCTUARY REGULATION VIEW --- */
+        .video-background-layer {
+            position: absolute;
+            top: 0; left: 0; width
