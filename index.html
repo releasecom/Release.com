@@ -5,135 +5,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Luminous Gallery</title>
     <style>
-        :root {
-            --bg-deep: #05070a;
-            --panel-bg: rgba(10, 14, 22, 0.85);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --text-primary: #cbd5e1;
-            --text-muted: #64748b;
-            --danger-soft: #fca5a5;
-            --accent-soft: #94a3b8;
-        }
-
         body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background-color: var(--bg-deep); 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #050505; 
+            font-family: 'Segoe UI', sans-serif; 
         }
         
-        /* RESTORED: Original home screen background rendering context */
-        #bgCanvas { position: absolute; top: 0; left: 0; z-index: 1; filter: blur(30px); opacity: 1; }
-        
-        .app-view {
-            display: none;
-            position: relative;
-            z-index: 10;
-            height: 100%;
-            width: 100%;
-            box-sizing: border-box;
-            padding-top: 100px;
+        /* Persistent Background Canvas Layer */
+        #bgCanvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            z-index: 1; 
+            filter: blur(30px); 
+            opacity: 1; 
         }
         
-        .app-view.active-view {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* --- HOME GALLERY VIEW --- */
+        /* Master Layout Container */
         #content {
-            text-align: center; color: white; transition: opacity 1.5s ease;
+            position: relative; 
+            z-index: 10; 
+            height: 100%;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            text-align: center; 
+            color: white; 
+            transition: opacity 1.5s ease;
             pointer-events: none; 
         }
 
-        h1 { font-weight: 200; letter-spacing: 12px; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; color: white; }
-        .subtitle { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 50px; opacity: 0.6; }
+        h1 { 
+            font-weight: 200; 
+            letter-spacing: 12px; 
+            text-transform: uppercase; 
+            font-size: 24px; 
+            margin-bottom: 10px; 
+        }
+        
+        .subtitle { 
+            font-size: 10px; 
+            letter-spacing: 5px; 
+            text-transform: uppercase; 
+            margin-bottom: 50px; 
+            opacity: 0.6; 
+        }
 
-        .choice-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; pointer-events: auto; }
+        /* Navigational Portals Grid */
+        .choice-container { 
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            pointer-events: auto; 
+            transition: opacity 1.5s; 
+        }
         
         .card { 
-            width: 180px; padding: 35px 20px; border: 1px solid rgba(255, 255, 255, 0.15); 
-            border-radius: 4px; text-decoration: none; color: white; 
-            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
+            width: 180px; 
+            padding: 35px 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 4px; 
+            text-decoration: none; 
+            color: white; 
+            background: rgba(0, 0, 0, 0.8); 
+            backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             transition: all 0.5s ease;
         }
-        .card:hover { border-color: rgba(255, 255, 255, 0.6); transform: translateY(-5px); }
-        .card h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
-        .card p { font-size: 10px; opacity: 0.6; line-height: 1.6; margin: 0; }
+        
+        .card:hover { 
+            border-color: rgba(255, 255, 255, 0.6); 
+            transform: translateY(-5px); 
+        }
+        
+        .card h2 { 
+            font-size: 11px; 
+            letter-spacing: 3px; 
+            text-transform: uppercase; 
+            margin-bottom: 12px; 
+        }
+        
+        .card p { 
+            font-size: 10px; 
+            opacity: 0.6; 
+            line-height: 1.6; 
+            margin: 0;
+        }
 
-        /* Top Bar Dynamic Control Strip */
+        /* Header Control Strip */
         #top-ui { 
-            position: absolute; top: 40px; width: 100%; display: flex; 
-            justify-content: center; align-items: center; gap: 15px; z-index: 100; 
-            transition: opacity 0.8s ease;
+            position: absolute; 
+            top: 40px; 
+            width: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 20px; 
+            z-index: 100; 
         }
 
         .ui-element { 
-            font-size: 9px; letter-spacing: 3px; text-transform: uppercase; 
-            background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.2); 
-            color: white; padding: 10px 18px; cursor: pointer; pointer-events: auto;
-            border-radius: 4px; transition: all 0.3s;
+            font-size: 9px; 
+            letter-spacing: 3px; 
+            text-transform: uppercase; 
+            background: rgba(20,20,20,0.8); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            color: white; 
+            padding: 10px 18px; 
+            cursor: pointer; 
+            pointer-events: auto;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
             font-family: inherit;
         }
-        .ui-element:hover { border-color: rgba(255,255,255,0.6); }
-        .ui-element.active-nav { border-color: white; background: rgba(255,255,255,0.1); }
-        .ui-element.active-state { border-color: var(--danger-soft); color: var(--danger-soft); }
-
-        /* Full Isolation Mode */
-        .observe-active #content { opacity: 0.02; pointer-events: none; }
-        .observe-active #top-ui { opacity: 0.15; }
-        .observe-active #top-ui:hover { opacity: 1; }
-
-        /* --- UPDATED: RECOGNITION SPACE (SEROTONIN IMAGERY) --- */
-        .video-background-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .sanctuary-video-el {
-            width: 100%; height: 100%; object-fit: cover;
-            transition: opacity 1.5s ease-in-out; opacity: 0;
-        }
-        .sanctuary-video-el.active { opacity: 0.55; }
-
-        .sanctuary-interface {
-            position: relative; z-index: 12;
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            justify-content: space-between; box-sizing: border-box;
-            padding: 20px 30px 40px 30px;
-        }
-        .sanctuary-header { text-align: center; }
-        .timer-readout { font-size: 2.2rem; font-weight: 200; color: white; letter-spacing: 2px; margin-top: 5px; }
-
-        .sanctuary-dashboard {
-            display: flex; justify-content: center; gap: 25px;
-            max-width: 1100px; margin: 0 auto; flex-wrap: wrap;
-            transition: opacity 0.8s ease;
-        }
-        .config-card {
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px;
-            padding: 22px; width: 240px;
-        }
-        .config-card h2 { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 15px 0; color: rgba(255,255,255,0.7); }
-        .option-stack { display: flex; flex-direction: column; gap: 8px; }
         
-        .pill-btn {
-            background: rgba(255, 255, 255, 0.04); border: 1px solid transparent;
-            color: rgba(255,255,255,0.6); padding: 11px 14px; border-radius: 4px;
-            cursor: pointer; text-align: left; font-size: 11px; font-family: inherit;
-            transition: all 0.25s;
+        .ui-element:hover { 
+            border-color: rgba(255, 255, 255, 0.6); 
         }
-        .pill-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
-        .pill-btn.selected { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.4); color: white; }
+        
+        .ui-element.active-state { 
+            border-color: #fca5a5; 
+            color: #fca5a5; 
+        }
 
-        .placeholder-frame { color: white; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; font-weight: 200; }
-
-        audio { display: none; }
+        /* Observation Mode Dynamic Overrides */
+        .observe-active #content { opacity: 0.02; }
+        .observe-active #content:hover { opacity: 0.9; }
     </style>
 </head>
 <body id="main-body">
@@ -141,119 +145,51 @@
     <canvas id="bgCanvas"></canvas>
     
     <div id="top-ui">
-        <button class="ui-element active-nav" onclick="switchView('home')" id="nav-home">Home Gallery</button>
-        <button class="ui-element" onclick="switchView('podcast')" id="nav-podcast">Thinking Well Podcast</button>
-        <button class="ui-element" onclick="switchView('sanctuary')" id="nav-sanctuary">Biophilic & Serotonin Imagery</button>
         <button class="ui-element" onclick="toggleObserve()" id="obs-btn">Observation: Off</button>
-        <select class="ui-element" id="freq-select" onchange="updateFrequency()">
-            <option value="0">Silent Sanctuary</option>
-            <option value="528">528Hz - Miracle</option>
-            <option value="417">417Hz - Change</option>
-            <option value="174">174Hz - Healing</option>
+        <a href="podcast.html" class="ui-element">Thinking Well Podcast</a>
+        <a href="imagery.html" class="ui-element">Regulatory Imagery</a>
+        
+        <select class="ui-element" id="freq-select" onchange="updateSoundscape()">
+            <option value="none">Silent Sanctuary</option>
+            <optgroup label="Solfeggio Frequencies">
+                <option value="528">528Hz - Transformation & Miracle</option>
+                <option value="417">417Hz - Clearing Negativity</option>
+                <option value="174">174Hz - Foundation & Pain Relief</option>
+            </optgroup>
+            <optgroup label="Nature Soundscapes">
+                <option value="rain">Nervous System Rainfall</option>
+                <option value="forest">Biophilic Forest Ambience</option>
+            </optgroup>
+            <optgroup label="Meditative Soundscapes">
+                <option value="drone">Deep Cosmic Grounding Drone</option>
+            </optgroup>
         </select>
     </div>
 
-    <div id="view-home" class="app-view active-view">
-        <div id="content">
-            <h1>The Luminous Gallery</h1>
-            <div class="subtitle">A Sanctuary for Processing</div>
-            <div class="choice-container">
-                <a href="#" class="card" onclick="toggleObserve()"><h2>The Release</h2><p>Dissolve the noise.</p></a>
-                <a href="#" class="card" onclick="switchView('sanctuary')"><h2>Liminal Space</h2><p>Radiate energy.</p></a>
-                <a href="#" class="card" onclick="switchView('podcast')"><h2>The Forge</h2><p>Expel the weight.</p></a>
-            </div>
-        </div>
-    </div>
+    <audio id="nature-audio" loop></audio>
 
-    <div id="view-podcast" class="app-view">
-        <div class="placeholder-frame">Thinking Well Podcast Archive — Stories of Community & Humanity</div>
-    </div>
-
-    <div id="view-sanctuary" class="app-view">
-        <div class="video-background-layer">
-            <video id="sanctuary-video" class="sanctuary-video-el" loop muted playsinline></video>
-        </div>
-        <audio id="sanctuary-audio" loop></audio>
-
-        <div class="sanctuary-interface">
-            <div class="sanctuary-header">
-                <div class="timer-readout" id="timer-text">00:00</div>
-            </div>
-
-            <div class="sanctuary-dashboard" id="sanctuary-controls">
-                <div class="config-card">
-                    <h2>1. Serotonin Imagery</h2>
-                    <div class="option-stack">
-                        <button class="pill-btn" data-type="visual" data-value="ocean">Deep Ocean & Jellyfish</button>
-                        <button class="pill-btn" data-type="visual" data-value="animals">Gentle Animals</button>
-                        <button class="pill-btn" data-type="visual" data-value="plants">Biophilic Forests</button>
-                        <button class="pill-btn" data-type="visual" data-value="cozy">Cozy Environments</button>
-                        <button class="pill-btn" data-type="visual" data-value="joy">Pure Human Joy</button>
-                    </div>
-                </div>
-
-                <div class="config-card">
-                    <h2>2. Soundscapes</h2>
-                    <div class="option-stack">
-                        <button class="pill-btn" data-type="audio" data-value="podcast">Thinking Well Session</button>
-                        <button class="pill-btn" data-type="audio" data-value="hz">528Hz Pure Frequency</button>
-                        <button class="pill-btn" data-type="audio" data-value="nature">Nervous System Rainfall</button>
-                        <button class="pill-btn" data-type="audio" data-value="meditation">Ambient Grounding</button>
-                    </div>
-                </div>
-
-                <div class="config-card">
-                    <h2>3. Duration</h2>
-                    <div class="option-stack">
-                        <button class="pill-btn" data-type="duration" data-value="5">5 Minutes</button>
-                        <button class="pill-btn" data-type="duration" data-value="15">15 Minutes</button>
-                        <button class="pill-btn" data-type="duration" data-value="30">30 Minutes</button>
-                        <button class="pill-btn" data-type="duration" data-value="60">1 Hour</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center;">
-                <button class="ui-element" id="sanctuary-action-btn" style="font-size: 10px; padding: 14px 40px;">Begin Regulation</button>
-            </div>
+    <div id="content">
+        <h1>The Luminous Gallery</h1>
+        <div class="subtitle">A Sanctuary for Processing</div>
+        <div class="choice-container">
+            <a href="release.html" class="card"><h2>The Release</h2><p>Dissolve the noise.</p></a>
+            <a href="gallery.html" class="card"><h2>Liminal Void</h2><p>Radiate energy.</p></a>
+            <a href="forge.html" class="card"><h2>The Forge</h2><p>Expel the weight.</p></a>
         </div>
     </div>
 
     <script>
-        // FIXED & UPDATED PRODUCTION CHANNELS (Public domain, instantly available fallback content streams)
-        const mediaAssets = {
-            visuals: {
-                ocean: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'],
-                animals: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'],
-                plants: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4'],
-                cozy: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'],
-                joy: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4']
-            },
-            audios: {
-                podcast: 'https://actions.google.com/sounds/v1/ambiences/morning_birds.ogg',
-                hz: 'https://actions.google.com/sounds/v1/ambiences/sine_wave_pure.ogg', 
-                nature: 'https://actions.google.com/sounds/v1/ambiences/rain_heavy_loud.ogg',
-                meditation: 'https://actions.google.com/sounds/v1/ambiences/ambient_hum_air_conditioner.ogg'
-            }
+        // --- PRODUCTION MEDIA SOURCE MATRIX ---
+        const soundscapes = {
+            rain: 'https://actions.google.com/sounds/v1/ambiences/rain_heavy_loud.ogg',
+            forest: 'https://actions.google.com/sounds/v1/ambiences/morning_birds.ogg',
+            drone: 'https://actions.google.com/sounds/v1/ambiences/ambient_hum_air_conditioner.ogg'
         };
 
-        // --- SUBVIEW ENGINE MAPPING ---
-        function switchView(viewId) {
-            if(viewId !== 'sanctuary') stopSanctuary();
-            
-            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
-            document.querySelectorAll('.ui-element').forEach(el => el.classList.remove('active-nav'));
-            
-            document.getElementById(`view-${viewId}`).classList.add('active-view');
-            
-            const targetedNav = document.getElementById(`nav-${viewId}`);
-            if(targetedNav) targetedNav.classList.add('active-nav');
-        }
-
-        // --- RESTORED HOMESCREEN PHYSICS LAVA-LAMP CANVAS ---
         const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
         let shapes = [], audioCtx, oscillator, gainNode;
+        const natureAudio = document.getElementById('nature-audio');
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -262,22 +198,24 @@
         window.addEventListener('resize', resize);
         resize();
 
+        // --- HOMESCREEN DRIFT ENGINE (RESTORED ORIGINAL KINETICS & KINEMATICS) ---
         class LuminousBlob {
             constructor() {
+                // Restored large cloud dimensions
                 this.radius = Math.random() * 150 + 150;
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                // RESTORED: Original kinetic velocity vector equations 
+                // Restored original continuous velocity calculations
                 this.vx = (Math.random() - 0.5) * 1.2;
                 this.vy = (Math.random() - 0.5) * 1.2;
                 
-                // CALMING VARIATION PALETTE: Original structure mapped to organic, grounding frequencies
+                // INTEGRATED SCIENTIFIC PALETTE: Restorative pastels and biological earth tones
                 this.color = [
-                    '#5f7d95', /* Calming Sage Mist */
-                    '#796e8d', /* Soft Regulatory Lavender */
-                    '#8fa194', /* Grounding Biophilic Moss */
-                    '#4b6b75', /* Ocean Abyssal Grey Blue */
-                    '#aa9682'  /* Warm Linen Earth */
+                    'rgba(143, 161, 148, 0.45)', /* Sage Mist */
+                    'rgba(167, 161, 184, 0.45)', /* Twilight Lavender */
+                    'rgba(212, 197, 185, 0.40)', /* Sand Linen */
+                    'rgba(107, 124, 133, 0.45)', /* Abyssal Slate */
+                    'rgba(220, 174, 150, 0.35)'  /* Pale Terracotta */
                 ][Math.floor(Math.random() * 5)];
             }
             update() {
@@ -297,14 +235,18 @@
         for(let i=0; i<12; i++) shapes.push(new LuminousBlob());
 
         function animate() {
-            ctx.fillStyle = '#050505'; // Original crisp deep backdrop value
+            ctx.fillStyle = '#050505'; // Crisper dark base value
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            shapes.forEach(s => { s.update(); s.draw(); });
+            
+            shapes.forEach(s => {
+                s.update();
+                s.draw();
+            });
             requestAnimationFrame(animate);
         }
         animate();
 
-        // --- INTERLOCKING FULLSCREEN ISOLATION TOOL ---
+        // --- FULLSCREEN ISOLATION UTILITY ---
         function toggleObserve() {
             const body = document.getElementById('main-body');
             const btn = document.getElementById('obs-btn');
@@ -329,13 +271,27 @@
             }
         }
 
-        // --- GENERATIVE HERTZ DRIVER ---
-        function updateFrequency() {
-            const freq = document.getElementById('freq-select').value;
-            if (freq == 0) {
-                if(gainNode) gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+        // --- HYBRID AUDIO CONTROLLER (HERTZ GENERATOR + SOUNDSCAPE PIPELINES) ---
+        function updateSoundscape() {
+            const selection = document.getElementById('freq-select').value;
+            
+            // Step 1: Default Teardowns
+            if (gainNode) {
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+            }
+            natureAudio.pause();
+
+            if (selection === 'none') return;
+
+            // Step 2: Handle Audio File Streams (Nature/Meditation)
+            if (isNaN(selection)) {
+                natureAudio.src = soundscapes[selection];
+                natureAudio.play().catch(e => console.log("System navigation interaction required."));
                 return;
             }
+
+            // Step 3: Handle Mathematical Frequency Synthesis (Hz options)
+            const targetFrequency = parseFloat(selection);
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 oscillator = audioCtx.createOscillator();
@@ -346,118 +302,9 @@
                 gainNode.connect(audioCtx.destination);
                 oscillator.start();
             }
-            oscillator.frequency.exponentialRampToValueAtTime(freq, audioCtx.currentTime + 1);
-            gainNode.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 1.5);
-        }
-
-        // --- REGULATION DASHBOARD CONTROLLER ---
-        let selectedVisuals = [];
-        let selectedAudio = null;
-        let selectedDuration = 5;
-        let timerInterval = null, videoRotationInterval = null, totalSecondsRemaining = 0, sanctuaryRunning = false;
-
-        const videoElement = document.getElementById('sanctuary-video');
-        const audioElement = document.getElementById('sanctuary-audio');
-        const sanctuaryActionBtn = document.getElementById('sanctuary-action-btn');
-        const timerText = document.getElementById('timer-text');
-        const sanctuaryControls = document.getElementById('sanctuary-controls');
-
-        document.querySelectorAll('.pill-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const type = button.dataset.type;
-                const value = button.dataset.value;
-
-                if (type === 'visual') {
-                    if (selectedVisuals.includes(value)) {
-                        selectedVisuals = selectedVisuals.filter(v => v !== value);
-                        button.classList.remove('selected');
-                    } else {
-                        selectedVisuals.push(value);
-                        button.classList.add('selected');
-                    }
-                } else if (type === 'audio') {
-                    document.querySelectorAll('[data-type="audio"]').forEach(b => b.classList.remove('selected'));
-                    if (selectedAudio === value) { selectedAudio = null; } 
-                    else { selectedAudio = value; button.classList.add('selected'); }
-                } else if (type === 'duration') {
-                    document.querySelectorAll('[data-type="duration"]').forEach(b => b.classList.remove('selected'));
-                    selectedDuration = parseInt(value);
-                    button.classList.add('selected');
-                }
-            });
-        });
-
-        sanctuaryActionBtn.addEventListener('click', () => {
-            if (!sanctuaryRunning) {
-                if (selectedVisuals.length === 0) { alert('Please select at least one landscape channel.'); return; }
-                startSanctuary();
-            } else {
-                stopSanctuary();
-            }
-        });
-
-        function startSanctuary() {
-            sanctuaryRunning = true;
-            sanctuaryActionBtn.textContent = "End Session Early";
-            sanctuaryActionBtn.classList.add('active-state');
-            sanctuaryControls.style.opacity = "0";
-            sanctuaryControls.style.pointerEvents = "none";
-            document.getElementById('top-ui').style.opacity = "0.05";
-
-            totalSecondsRemaining = selectedDuration * 60;
-            updateTimerDisplay();
-            timerInterval = setInterval(countdownSanctuary, 1000);
-
-            if (selectedAudio && mediaAssets.audios[selectedAudio]) {
-                audioElement.src = mediaAssets.audios[selectedAudio];
-                audioElement.play().catch(e => console.log("Context loading..."));
-            }
-
-            playRandomSelectedVideo();
-            videoRotationInterval = setInterval(playRandomSelectedVideo, 30000);
-        }
-
-        function stopSanctuary() {
-            sanctuaryRunning = false;
-            sanctuaryActionBtn.textContent = "Begin Regulation";
-            sanctuaryActionBtn.classList.remove('active-state');
-            sanctuaryControls.style.opacity = "1";
-            sanctuaryControls.style.pointerEvents = "auto";
-            document.getElementById('top-ui').style.opacity = "1";
-
-            clearInterval(timerInterval);
-            clearInterval(videoRotationInterval);
-            videoElement.classList.remove('active');
-            videoElement.pause();
-            audioElement.pause();
-            timerText.textContent = "00:00";
-        }
-
-        function countdownSanctuary() {
-            if (totalSecondsRemaining <= 0) { stopSanctuary(); } 
-            else { totalSecondsRemaining--; updateTimerDisplay(); }
-        }
-
-        function updateTimerDisplay() {
-            const min = Math.floor(totalSecondsRemaining / 60);
-            const sec = totalSecondsRemaining % 60;
-            timerText.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-        }
-
-        function playRandomSelectedVideo() {
-            if (selectedVisuals.length === 0) return;
-            const cat = selectedVisuals[Math.floor(Math.random() * selectedVisuals.length)];
-            const pool = mediaAssets.visuals[cat];
-            const url = pool[Math.floor(Math.random() * pool.length)];
-
-            videoElement.classList.remove('active');
-            setTimeout(() => {
-                videoElement.src = url;
-                videoElement.load();
-                videoElement.play().then(() => {
-                    videoElement.classList.add('active');
-                }).catch(e => console.log("Stream buffering continuous."));
-            }, 1500);
+            
+            oscillator.frequency.exponentialRampToValueAtTime(targetFrequency, audioCtx.currentTime + 0.8);
+            gainNode.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 1.0); // Safe, regulated volume ceilings
         }
     </script>
 </body>
