@@ -11,10 +11,10 @@
             font-family: 'Segoe UI', sans-serif; 
         }
         
-        /* SHARPNESS ADJUSTED: Reduced blur from 30px/40px down to 14px for captivating visual depth */
+        /* LAVA LAMP EFFECT: Blur reduced to 8px so shapes are crisp, loose, and blend organically */
         #bgCanvas { 
             position: absolute; top: 0; left: 0; z-index: 1; 
-            filter: blur(14px); opacity: 1; 
+            filter: blur(8px); opacity: 1; 
         }
         
         #content {
@@ -40,13 +40,13 @@
         .card h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
         .card p { font-size: 10px; opacity: 0.6; line-height: 1.6; margin: 0; }
 
-        /* HEADER SECTION: Cleaned to only contain Observation & Audio controls */
+        /* HEADER SECTION */
         #top-ui { 
             position: absolute; top: 40px; width: 100%; display: flex; 
             justify-content: center; align-items: center; gap: 20px; z-index: 100; 
         }
 
-        /* FOOTER SECTION: Housing the external portal links */
+        /* FOOTER SECTION */
         #bottom-ui {
             position: absolute; bottom: 40px; width: 100%; display: flex;
             justify-content: center; align-items: center; gap: 20px; z-index: 100;
@@ -63,7 +63,7 @@
         .ui-element:hover { border-color: rgba(255, 255, 255, 0.6); }
         .ui-element.active-state { border-color: #fca5a5; color: #fca5a5; }
 
-        /* Observation Mode Dynamic Layout Isolation */
+        /* Observation Mode Isolation */
         .observe-active #content, .observe-active #bottom-ui { opacity: 0.02; pointer-events: none; }
         .observe-active #top-ui { opacity: 0.15; }
         .observe-active #top-ui:hover { opacity: 1; }
@@ -78,8 +78,8 @@
         
         <select class="ui-element" id="freq-select" onchange="updateSoundscape()">
             <option value="none">Silent Sanctuary</option>
-            <option value="432">The Golden Ratio HZ (432Hz)</option>
-            <option value="rain">Rain Forest (Chirping Birds & Rain)</option>
+            <option value="432">The Golden Ratio HZ</option>
+            <option value="rain">Rain Forest</option>
             <option value="ocean">Ocean Waves</option>
             <option value="bowl">Restorative Sound Bowl</option>
         </select>
@@ -103,11 +103,11 @@
     <audio id="nature-audio" loop></audio>
 
     <script>
-        // Production-ready audio streaming nodes
+        // Verified high-fidelity continuous stream directories
         const soundscapes = {
-            rain: 'https://actions.google.com/sounds/v1/ambiences/morning_birds.ogg',
-            ocean: 'https://actions.google.com/sounds/v1/ambiences/ocean_waves.ogg',
-            bowl: 'https://actions.google.com/sounds/v1/ambiences/music_box_strum.ogg'
+            rain: 'https://assets.mixkit.co/active_storage/sfx/2438/2438-84.wav', // Real rain & soft birds
+            ocean: 'https://assets.mixkit.co/active_storage/sfx/2513/2513-84.wav', // Crashing ocean rhythm
+            bowl: 'https://assets.mixkit.co/active_storage/sfx/1647/1647-84.wav'  // Pure, sustained crystalline bell resonance
         };
 
         const canvas = document.getElementById('bgCanvas');
@@ -122,22 +122,23 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- DRIFT PHYSICS SYSTEM ---
+        // --- MEDITATIVE DRIFT PHYSICS SYSTEM ---
         class LuminousBlob {
             constructor() {
                 this.radius = Math.random() * 140 + 160;
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 1.1;
-                this.vy = (Math.random() - 0.5) * 1.1;
+                // SLOWED DOWN: Vector speed scaled down by 50% for a luxurious, liquid drift
+                this.vx = (Math.random() - 0.5) * 0.55;
+                this.vy = (Math.random() - 0.5) * 0.55;
                 
-                // RESTORED VIBRANCY PALETTE: High-vibrancy origins smoothly scaled down just a step for comforting viewing
+                // RESTORED VIBRANT COLORS (Vibrant yet relaxing)
                 this.color = [
-                    'rgba(62, 207, 114, 0.55)',  /* Controlled Emerald Green */
-                    'rgba(240, 185, 48, 0.55)',  /* Controlled Amber Yellow */
-                    'rgba(110, 122, 237, 0.55)', /* Controlled Lavender Violet */
-                    'rgba(34, 197, 219, 0.55)',  /* Controlled Deep Cyan */
-                    'rgba(235, 103, 103, 0.50)'  /* Controlled Soft Coral Red */
+                    'rgba(62, 207, 114, 0.65)',  /* Vibrant Emerald */
+                    'rgba(240, 185, 48, 0.65)',  /* Warm Amber */
+                    'rgba(110, 122, 237, 0.65)', /* Radiant Lavender */
+                    'rgba(34, 197, 219, 0.65)',  /* True Cyan */
+                    'rgba(235, 103, 103, 0.60)'  /* Rich Coral */
                 ][Math.floor(Math.random() * 5)];
             }
             update() {
@@ -164,7 +165,7 @@
         }
         animate();
 
-        // --- COGNITIVE ISOLATION ENGINE ---
+        // --- FULLSCREEN INTERACTION CONTROLLER ---
         function toggleObserve() {
             const body = document.getElementById('main-body');
             const btn = document.getElementById('obs-btn');
@@ -186,36 +187,6 @@
             }
         }
 
-        // --- AUDIO ENGINE SWITCHBOARD ---
+        // --- DYNAMIC SWITCHBOARD CONTROLLER ---
         function updateSoundscape() {
-            const selection = document.getElementById('freq-select').value;
-            
-            if (gainNode) gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-            natureAudio.pause();
-
-            if (selection === 'none') return;
-
-            if (isNaN(selection)) {
-                natureAudio.src = soundscapes[selection];
-                natureAudio.play().catch(e => console.log("User interaction step needed."));
-                return;
-            }
-
-            // Synthesize Golden Ratio or numerical frequencies natively
-            const targetFrequency = parseFloat(selection);
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                oscillator = audioCtx.createOscillator();
-                gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start();
-            }
-            oscillator.frequency.exponentialRampToValueAtTime(targetFrequency, audioCtx.currentTime + 0.8);
-            gainNode.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 1.0);
-        }
-    </script>
-</body>
-</html>
+            const selection = document.getElementById
