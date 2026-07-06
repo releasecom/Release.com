@@ -11,10 +11,12 @@
             font-family: 'Segoe UI', sans-serif; 
         }
         
-        /* LAVA LAMP EFFECT: Blur reduced to 8px so shapes are crisp, loose, and blend organically */
+        /* LAVA LAMP CANVAS LAYER */
         #bgCanvas { 
             position: absolute; top: 0; left: 0; z-index: 1; 
-            filter: blur(8px); opacity: 1; 
+            filter: blur(8px); opacity: 1;
+            width: 100%; height: 100%;
+            pointer-events: none;
         }
         
         #content {
@@ -40,13 +42,13 @@
         .card h2 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
         .card p { font-size: 10px; opacity: 0.6; line-height: 1.6; margin: 0; }
 
-        /* HEADER SECTION */
+        /* HEADER CONTROLS SECTION */
         #top-ui { 
             position: absolute; top: 40px; width: 100%; display: flex; 
             justify-content: center; align-items: center; gap: 20px; z-index: 100; 
         }
 
-        /* FOOTER SECTION */
+        /* FOOTER PORTALS SECTION */
         #bottom-ui {
             position: absolute; bottom: 40px; width: 100%; display: flex;
             justify-content: center; align-items: center; gap: 20px; z-index: 100;
@@ -63,7 +65,7 @@
         .ui-element:hover { border-color: rgba(255, 255, 255, 0.6); }
         .ui-element.active-state { border-color: #fca5a5; color: #fca5a5; }
 
-        /* Observation Mode Isolation */
+        /* Observation Separation States */
         .observe-active #content, .observe-active #bottom-ui { opacity: 0.02; pointer-events: none; }
         .observe-active #top-ui { opacity: 0.15; }
         .observe-active #top-ui:hover { opacity: 1; }
@@ -74,7 +76,7 @@
     <canvas id="bgCanvas"></canvas>
     
     <div id="top-ui">
-        <button class="ui-element" onclick="toggleObserve()" id="obs-btn">Observation: Off</button>
+        <button class="ui-element" onclick="toggleObserve(event)" id="obs-btn">Observation: Off</button>
         
         <select class="ui-element" id="freq-select" onchange="updateSoundscape()">
             <option value="none">Silent Sanctuary</option>
@@ -96,18 +98,18 @@
     </div>
 
     <div id="bottom-ui">
-        <a href="podcast.html" class="ui-element">Thinking Well Podcast</a>
-        <a href="imagery.html" class="ui-element">Regulatory Imagery</a>
+        <a href="./podcast.html" class="ui-element">Thinking Well Podcast</a>
+        <a href="./imagery.html" class="ui-element">Regulatory Imagery</a>
     </div>
 
-    <audio id="nature-audio" loop></audio>
+    <audio id="nature-audio" loop crossorigin="anonymous"></audio>
 
     <script>
-        // Verified high-fidelity continuous stream directories
+        // High-reliability public archive stream mirrors
         const soundscapes = {
-            rain: 'https://assets.mixkit.co/active_storage/sfx/2438/2438-84.wav', // Real rain & soft birds
-            ocean: 'https://assets.mixkit.co/active_storage/sfx/2513/2513-84.wav', // Crashing ocean rhythm
-            bowl: 'https://assets.mixkit.co/active_storage/sfx/1647/1647-84.wav'  // Pure, sustained crystalline bell resonance
+            rain: 'https://ia802508.us.archive.org/21/items/sound-effects-nature-rain/Soft%20Rain%20With%20Birds.mp3', 
+            ocean: 'https://ia600302.us.archive.org/12/items/SeashoreSoundEffect/Seashore-SoundEffect.mp3', 
+            bowl: 'https://ia800904.us.archive.org/30/items/singing-bowl-resonance/tibetan-singing-bowl.mp3'  
         };
 
         const canvas = document.getElementById('bgCanvas');
@@ -122,23 +124,21 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- MEDITATIVE DRIFT PHYSICS SYSTEM ---
+        // --- LAVA LAMP RENDERING LOOP ENGINE ---
         class LuminousBlob {
             constructor() {
                 this.radius = Math.random() * 140 + 160;
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                // SLOWED DOWN: Vector speed scaled down by 50% for a luxurious, liquid drift
                 this.vx = (Math.random() - 0.5) * 0.55;
                 this.vy = (Math.random() - 0.5) * 0.55;
                 
-                // RESTORED VIBRANT COLORS (Vibrant yet relaxing)
                 this.color = [
-                    'rgba(62, 207, 114, 0.65)',  /* Vibrant Emerald */
-                    'rgba(240, 185, 48, 0.65)',  /* Warm Amber */
-                    'rgba(110, 122, 237, 0.65)', /* Radiant Lavender */
-                    'rgba(34, 197, 219, 0.65)',  /* True Cyan */
-                    'rgba(235, 103, 103, 0.60)'  /* Rich Coral */
+                    'rgba(62, 207, 114, 0.65)',  
+                    'rgba(240, 185, 48, 0.65)',  
+                    'rgba(110, 122, 237, 0.65)', 
+                    'rgba(34, 197, 219, 0.65)',  
+                    'rgba(235, 103, 103, 0.60)'  
                 ][Math.floor(Math.random() * 5)];
             }
             update() {
@@ -155,7 +155,14 @@
             }
         }
 
-        for(let i=0; i<12; i++) shapes.push(new LuminousBlob());
+        // Initialize shapes collection
+        function initShapes() {
+            shapes = [];
+            for(let i=0; i<12; i++) {
+                shapes.push(new LuminousBlob());
+            }
+        }
+        initShapes();
 
         function animate() {
             ctx.fillStyle = '#050505';
@@ -163,10 +170,15 @@
             shapes.forEach(s => { s.update(); s.draw(); });
             requestAnimationFrame(animate);
         }
+        
+        // Safety hook to guarantee rendering starts immediately
         animate();
 
-        // --- FULLSCREEN INTERACTION CONTROLLER ---
-        function toggleObserve() {
+        // --- FULLSCREEN INTERACTION CONTEXT ---
+        function toggleObserve(event) {
+            // Prevent event bouncing
+            if(event) event.preventDefault();
+
             const body = document.getElementById('main-body');
             const btn = document.getElementById('obs-btn');
             body.classList.toggle('observe-active');
@@ -176,10 +188,15 @@
 
             if (isObserving) {
                 btn.classList.add('active-state');
-                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-                else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+                
+                // Pure browser security compliance fullscreen invocation
+                const docEl = document.documentElement;
+                if (docEl.requestFullscreen) docEl.requestFullscreen();
+                else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+                else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
             } else {
                 btn.classList.remove('active-state');
+                
                 if (document.fullscreenElement || document.webkitFullscreenElement) {
                     if (document.exitFullscreen) document.exitFullscreen();
                     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
@@ -187,6 +204,57 @@
             }
         }
 
-        // --- DYNAMIC SWITCHBOARD CONTROLLER ---
+        // --- AUDIO COMPLIANCE PIPELINES ---
         function updateSoundscape() {
-            const selection = document.getElementById
+            const selection = document.getElementById('freq-select').value;
+            
+            // Clean active tracks instantly
+            if (gainNode) {
+                try { gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); } catch(e){}
+            }
+            natureAudio.pause();
+
+            if (selection === 'none') return;
+
+            // Handle Audio Media Streaming Layouts
+            if (isNaN(selection)) {
+                natureAudio.src = soundscapes[selection];
+                natureAudio.load();
+                
+                // Standard browser async user token check
+                let playPromise = natureAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Audio waiting for user gesture context token input.", error);
+                    });
+                }
+                return;
+            }
+
+            // Generate Natively Synthesized Golden Ratio Frequency Tone
+            const targetFrequency = parseFloat(selection);
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Ensure context state wake rule is active
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if (!oscillator) {
+                oscillator = audioCtx.createOscillator();
+                gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+            }
+            
+            oscillator.frequency.setValueAtTime(targetFrequency, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.5);
+        }
+    </script>
+</body>
+</html>
